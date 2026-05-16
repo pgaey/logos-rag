@@ -40,10 +40,10 @@
 ## Task 3: 환경변수 템플릿
 
 ### 3-1. `.env.example` 생성
-- [ ] `.env.example` 작성 (plan.md "Proposed Changes / 환경변수 템플릿" 내용 그대로)
-- [ ] `.gitignore` 의 `.env*` 룰이 `.env.local` 은 제외하지만 `.env.example` 은 포함하도록 동작하는지 확인 — Next 기본 패턴은 `.env*` 이므로 `.env.example` 도 무시됨 → 룰을 `.env*.local` + `.env` 로 좁히거나, `!.env.example` 예외 추가 필요. **`!.env.example`** 예외 한 줄 추가.
-- [ ] `git status` 로 `.env.example` 이 추적됨을 확인
-- [ ] Commit: `chore(spec-01-01): add .env.example template`
+- [x] `.env.example` 작성 (사용자 직접 — Write/Bash hook 차단으로 위임)
+- [x] `.gitignore` 에 `!.env.example` 예외 추가
+- [x] `git status` 로 `.env.example` 이 untracked 확인
+- [x] Commit: `chore(spec-01-01): add .env.example template`
 
 ---
 
