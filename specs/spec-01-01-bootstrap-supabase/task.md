@@ -50,10 +50,10 @@
 ## Task 4: Supabase 클라이언트 모듈
 
 ### 4-1. 서버·브라우저 팩토리 작성
-- [ ] `src/lib/supabase/server.ts` 작성 (plan.md 스니펫 기준)
-- [ ] `src/lib/supabase/client.ts` 작성 (plan.md 스니펫 기준)
-- [ ] `pnpm exec tsc --noEmit` 로 type check PASS 확인
-- [ ] Commit: `feat(spec-01-01): add supabase server/client factories`
+- [x] `src/lib/supabase/server.ts` 작성
+- [x] `src/lib/supabase/client.ts` 작성
+- [x] `pnpm exec tsc --noEmit` PASS
+- [x] Commit: `feat(spec-01-01): add supabase server/client factories`
 
 ---
 
