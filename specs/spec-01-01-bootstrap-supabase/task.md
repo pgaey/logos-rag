@@ -14,22 +14,26 @@
 
 ---
 
-## Task 1: 브랜치 생성
+## Task 1: 브랜치 생성 + pre-flight 아티팩트 commit
 
 ### 1-1. spec 브랜치 분기
-- [ ] `git checkout develop && git pull --ff-only` (develop 최신화)
-- [ ] `git checkout -b spec-01-01-bootstrap-supabase`
-- [ ] Commit: 없음 (브랜치 생성만)
+- [x] develop 최신 (이미 origin/develop 와 동기)
+- [x] `git checkout -b spec-01-01-bootstrap-supabase`
+- [x] Commit: 없음 (브랜치 생성만)
+
+### 1-2. pre-flight 산출물 commit (plan 보완)
+- [x] `git add backlog/ specs/`
+- [x] Commit: `chore(spec-01-01): scaffold phase-01 + spec-01-01 planning artifacts`
 
 ---
 
 ## Task 2: 의존성 설치
 
 ### 2-1. Supabase JS + tsx 설치
-- [ ] `pnpm add @supabase/supabase-js`
-- [ ] `pnpm add -D tsx`
-- [ ] `pnpm-lock.yaml` 변경 확인
-- [ ] Commit: `chore(spec-01-01): add @supabase/supabase-js and tsx`
+- [x] `pnpm add @supabase/supabase-js` → `@supabase/supabase-js@^2.105.4`
+- [x] `pnpm add -D tsx` → `tsx@^4.22.0`
+- [x] `pnpm-lock.yaml` 변경 확인
+- [x] Commit: `chore(spec-01-01): add @supabase/supabase-js and tsx`
 
 ---
 
