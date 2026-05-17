@@ -77,27 +77,24 @@
 ## Task 6: 사용자 수동 셋업 + 검증 실행 (커밋 없음)
 
 ### 6-1. 사용자가 직접 수행
-- [ ] Supabase 프로젝트 생성 + pgvector extension 활성화 (Dashboard → Database → Extensions)
-- [ ] `sb_publishable_*` / `sb_secret_*` 키 발급
-- [ ] Google AI Studio 에서 Gemini API key 발급
-- [ ] `cp .env.example .env.local` → 4개 변수 실제 값으로 채움
+- [x] Supabase 프로젝트 생성 + pgvector extension 활성화 (Dashboard → Database → Extensions)
+- [x] `sb_publishable_*` / `sb_secret_*` 키 발급 (보안 사고 후 rotate 1회 수행)
+- [x] Google AI Studio 에서 Gemini API key 발급
+- [x] `.env.local` 채움 (4 변수 + SUPABASE_DB_URL Session pooler URI)
 
 ### 6-2. 에이전트가 검증
-- [ ] `pnpm check:supabase` 실행 → 3줄 PASS + exit 0 확인
-- [ ] 수동 검증 시나리오 1 (`grep` 으로 secret key 누출 확인) — `pnpm build` 후 `.next/` 검색
-- [ ] 수동 검증 시나리오 2 (env 미설정 시 에러 메시지) — 임시로 secret 빼고 재실행, 복원
-- [ ] Commit: 없음 (검증만)
+- [x] `pnpm check:supabase` 실행 → 3줄 PASS + exit 0
+- [x] 시나리오 1 (`grep` 으로 secret key 누출 확인) — `pnpm build` → `.next/{static,server}` 에서 `sb_secret_` / `SUPABASE_SECRET_KEY` 검색 결과 0건
+- [x] 시나리오 2 (env 누락 에러) — `pnpm exec tsx scripts/check-supabase.ts` (no env-file) → `Missing SUPABASE_DB_URL in .env.local` + exit 1
+- [x] Commit: 없음 (검증만)
 
 ---
 
 ## Task 7: README 셋업 가이드
 
-### 7-1. `README.md` 업데이트
-- [ ] 프로젝트 한 줄 소개 (`logos-rag — 한국어 질문으로 영문 KJV 의미 검색·답변 RAG 포트폴리오`)
-- [ ] "셋업" 섹션: 1) Supabase 프로젝트 + pgvector, 2) AI Studio Gemini key, 3) `.env.local` 채우기, 4) `pnpm install && pnpm check:supabase`
-- [ ] 환경변수 표 (이름 / 용도 / 노출 컨텍스트)
-- [ ] 브랜치 보호 룰 안내 (GitHub 웹에서 main·develop 보호 필수)
-- [ ] Commit: `docs(spec-01-01): add setup guide to README`
+### 7-1. `README.md` 업데이트 (Sonnet sub-agent 위임)
+- [x] 9개 섹션 (제목 / 한 줄 소개 / 기술 스택 / 셋업 / 환경변수 / 개발 워크플로 / 브랜치 보호 / 스크립트 / 라이선스)
+- [x] Commit: `docs(spec-01-01): add setup guide to README`
 
 ---
 
