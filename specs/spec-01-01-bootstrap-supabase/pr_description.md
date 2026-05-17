@@ -8,7 +8,7 @@ phase-01 (data-pipeline) 의 후속 spec 들 — bible-source-fetch / verse-sche
 ### 주요 변경 사항
 - [x] Supabase 신규 API 키 형식 (`sb_publishable_*` / `sb_secret_*`) 기반 환경변수 wiring
 - [x] 서버 전용·브라우저용 Supabase JS 팩토리 분리 (`src/lib/supabase/{server,client}.ts`)
-- [x] **`pg` 직접 연결로 pgvector 활성 검증 스크립트 추가** (`scripts/check-supabase.ts`) — PostgREST 가 `pg_catalog` 미노출이라 Supabase JS 로는 불가능
+- [x] **DB 세팅 확인용 `pg` 검증 스크립트 추가** (`scripts/check-supabase.ts`) — Supabase JS 와 **별개 보완 도구**. 개발자가 "DB 세팅이 올바른가" 를 명령 한 줄로 점검 (pgvector 활성 여부 등). PostgREST 가 `pg_catalog` 미노출이라 직접 TCP 가 불가피
 - [x] `pnpm check:supabase` 명령으로 SELECT 1 + pgvector extension 두 검증 자동화
 - [x] `.env.example` 템플릿 + `.gitignore` 의 `!.env.example` 예외
 - [x] README 셋업 가이드 (9개 섹션 — 스택·셋업·환경변수·GitFlow·브랜치 보호·스크립트·라이선스)
@@ -23,10 +23,12 @@ phase-01 (data-pipeline) 의 후속 spec 들 — bible-source-fetch / verse-sche
    - secret key 는 `server.ts` 만, publishable key 는 `client.ts` 만 참조 — import path 만으로 권한 컨텍스트 명확
    - `NEXT_PUBLIC_*` prefix 규칙 준수 — Next 가 클라이언트 번들에 secret 가 절대 포함되지 않도록 강제
 
-2. **Supabase JS 대신 `pg` 를 도입한 결정** (`scripts/check-supabase.ts`)
-   - PostgREST 가 `pg_catalog` 미노출 → extension 검증·DDL·COPY 는 직접 TCP 가 표준
-   - Session pooler URI 사용 — IPv4 호환 (한국 환경 안전) + Direct 와 기능 동일
-   - 후속 spec (`spec-01-03` 마이그레이션, `spec-01-04` 31k verse 적재) 이 같은 패턴 재사용 예정
+2. **DB 검증·관리용 `pg` 직접 연결 추가 도입** (`scripts/check-supabase.ts`)
+   - Supabase JS 와 **대체 관계가 아니라 보완 관계**. 앱 런타임 코드(`src/lib/supabase/{server,client}.ts`) 는 여전히 Supabase JS 만 사용.
+   - 본 스크립트의 목적: **DB 세팅이 올바른지 개발자가 직접 점검** — 연결 살아있나, pgvector extension 활성됐나. 향후 동료가 환경 재현·디버깅할 때도 같은 명령(`pnpm check:supabase`) 으로 재사용.
+   - PostgREST 가 `pg_catalog` 등 시스템 카탈로그 미노출 → 검증/관리 작업은 직접 TCP 가 **불가피한** 선택 (선호가 아니라 강제).
+   - Session pooler URI 사용 — IPv4 호환 (한국 환경 안전) + Direct 와 기능 동일.
+   - 후속 spec (`spec-01-03` 마이그레이션, `spec-01-04` 31k verse 적재) 도 같은 `pg` 통로 재사용 예정.
 
 3. **GitFlow 변형** (Constitution §5.6 편차)
    - 본 spec PR target = `phase-01-data-pipeline` (base branch 모드)

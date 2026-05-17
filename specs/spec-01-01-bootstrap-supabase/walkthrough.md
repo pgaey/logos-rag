@@ -4,9 +4,11 @@
 
 ## 📌 결정 기록
 
+> **스코프 주의**: 본 표의 "DB 통신 방식" 결정은 **개발자 도구 (`scripts/check-supabase.ts`) 한정**입니다. **앱 런타임 코드 (`src/lib/supabase/*`) 는 Supabase JS 만 사용** 하며, pg 와 대체 관계가 아닙니다 (보완 관계).
+
 | 이슈 | 선택지 | 결정 | 이유 |
 |---|---|---|---|
-| 검증 스크립트의 DB 통신 방식 | Supabase JS (PostgREST) / `pg` 직접 / Dashboard RPC 함수 | **`pg` 직접 (Session pooler)** | PostgREST 가 `pg_catalog` 미노출 → Supabase JS 로 pgvector extension 검증 불가. pg 직접이 표준이고 spec-01-03/04 의 마이그레이션·배치에서 재사용 |
+| 검증 스크립트의 DB 통신 방식 (앱 코드는 별개로 Supabase JS 유지) | Supabase JS (PostgREST) / `pg` 직접 / Dashboard RPC 함수 | **`pg` 직접 (Session pooler) 추가 도입** | PostgREST 가 `pg_catalog` 미노출이라 Supabase JS 로는 pgvector extension 검증 불가능. 본 스크립트만 pg 통로 추가, 앱 런타임 영향 없음. spec-01-03/04 의 마이그레이션·배치에서 동일 통로 재사용 |
 | Postgres 연결 모드 | Direct (5432, IPv6 only) / Session pooler (5432, IPv4) / Transaction pooler (6543) | **Session pooler** | 무료 tier 의 Direct 는 IPv6 only — 한국 가정용 IPv4 환경에서 실패 가능성. Session pooler 는 Direct 와 기능 동일하고 IPv4 호환 |
 | 단위 테스트 러너 (Vitest 등) 도입 시점 | 본 spec 에서 도입 / 별도 spec / 미정 | **본 spec 에선 미도입, 검증 스크립트로 갈음** | bootstrap 범위 최소화. 본격 로직 (cosine wrapper 등) 이 생기는 spec 에서 도입하는 게 자연스러움 |
 | Supabase 클라이언트 보일러 | Framework 탭 자동 생성 / 직접 작성 | **직접 작성 (5줄)** | Framework 탭은 legacy `anon` 기준이라 신규 키 형식과 안 맞음. 5줄이라 직접이 빠르고 학습 가치 ↑ |
