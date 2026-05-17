@@ -52,34 +52,35 @@
 
 ---
 
-## Task 4: 마이그레이션 적용 + 검증 (커밋 없음)
+## Task 4: 마이그레이션 적용 + 검증
 
-### 4-1. 사용자가 직접 수행
-- [ ] `supabase db push` 실행 → 마이그레이션 적용 성공 메시지 확인
-- [ ] Dashboard → Database → Tables → `verses` 보이는지 수동 확인
+### 4-1. 에이전트가 수행 (사용자 위임)
+- [x] `supabase db push --include-all` 실행
+- [x] 첫 시도 에러: `type "vector" does not exist` — Supabase 가 pgvector 를 `extensions` 스키마에 둬서 발생
+- [x] SQL 수정 (`vector(768)` → `extensions.vector(768)`) + 재push 성공
+- [x] 별도 `fix(spec-01-03): use extensions.vector for embedding column` commit 으로 history 보존
 
-### 4-2. 에이전트 검증
-- [ ] 임시 SQL: `psql $SUPABASE_DB_URL -c "\d verses"` 또는 pg 로 verses 컬럼 6개 + RLS 활성 확인 (스크립트 확장 전 임시)
-- [ ] Commit: 없음
+### 4-2. 추가 검증
+- [ ] Task 5 의 확장된 `pnpm check:supabase` 가 formal verification 역할
 
 ---
 
 ## Task 5: Generated types + check:supabase 확장 (Sonnet sub-agent 위임 후보)
 
 ### 5-1. Generated types 생성
-- [ ] `supabase gen types typescript --linked > src/lib/db/types.ts`
-- [ ] 결과 파일에 verses 테이블 타입 포함 확인 (grep verses)
+- [x] `supabase gen types typescript --linked > src/lib/db/types.ts`
+- [x] 결과 파일에 verses 테이블 타입 포함 확인 (grep verses)
 
 ### 5-2. `scripts/check-supabase.ts` 확장
-- [ ] 기존 SELECT 1 + pgvector 검사 뒤에 verses 테이블 + 컬럼 6개 검증 한 단계 추가
-- [ ] 출력 형식: `[check:supabase] verses table ........ PASS / FAIL`
-- [ ] `pnpm exec tsc --noEmit` PASS
+- [x] 기존 SELECT 1 + pgvector 검사 뒤에 verses 테이블 + 컬럼 6개 검증 한 단계 추가
+- [x] 출력 형식: `[check:supabase] verses table ........ PASS / FAIL`
+- [x] `pnpm exec tsc --noEmit` PASS
 
 ### 5-3. 통합 smoke
-- [ ] `pnpm check:supabase` → 4단계 PASS 출력 확인
+- [x] `pnpm check:supabase` → 4단계 PASS 출력 확인
 
 ### 5-4. Commit
-- [ ] Commit: `feat(spec-01-03): add db types and extend check:supabase with verses verify`
+- [x] Commit: `feat(spec-01-03): add db types and extend check:supabase with verses verify`
 
 ---
 
