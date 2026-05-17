@@ -46,9 +46,9 @@
 ## Task 3: Migration 파일 작성
 
 ### 3-1. `supabase migration new` + SQL 작성
-- [ ] `supabase migration new create_verses` → 빈 SQL 파일 생성
-- [ ] SQL 작성 (plan.md "Proposed Changes / Supabase CLI 산출물" 의 SQL 그대로)
-- [ ] Commit: `feat(spec-01-03): add create_verses migration`
+- [x] `supabase migration new create_verses` → `supabase/migrations/20260517144458_create_verses.sql`
+- [x] SQL 작성 (CREATE EXTENSION vector + CREATE TABLE verses + UNIQUE constraint + RLS ENABLE + COMMENT)
+- [x] Commit: `feat(spec-01-03): add create_verses migration`
 
 ---
 
