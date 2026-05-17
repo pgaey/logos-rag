@@ -8,7 +8,7 @@ CREATE TABLE verses (
   chapter INTEGER NOT NULL,
   verse INTEGER NOT NULL,
   text TEXT NOT NULL,
-  embedding vector(768),
+  embedding extensions.vector(768),
   CONSTRAINT verses_book_chapter_verse_unique UNIQUE (book, chapter, verse)
 );
 
