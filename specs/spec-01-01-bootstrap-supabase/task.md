@@ -102,16 +102,16 @@
 
 > 모든 작업 task 완료 후 `/hk-ship` 절차를 따릅니다.
 
-- [ ] 코드 품질 점검: `pnpm exec tsc --noEmit` PASS
-- [ ] 코드 품질 점검: `pnpm lint` PASS
-- [ ] 통합 smoke 재실행: `pnpm check:supabase` PASS
-- [ ] **walkthrough.md 작성** (변경 요약 + 결정 기록 + 검증 증거)
-- [ ] **pr_description.md 작성** (템플릿 준수)
-- [ ] **Ship Commit**: `docs(spec-01-01): ship walkthrough and pr description`
-- [ ] **Base branch 자동 생성 확인**: sdd ship 이 `phase-01-data-pipeline` 을 develop 에서 분기·push
-- [ ] **Push**: `git push -u origin spec-01-01-bootstrap-supabase`
-- [ ] **PR 생성**: `gh pr create --base phase-01-data-pipeline` (또는 `/hk-pr-gh`). PR target 이 `phase-01-data-pipeline` 인지 명시
-- [ ] **사용자 알림**: 푸시 완료 + PR URL 보고
+- [x] 코드 품질 점검: `pnpm exec tsc --noEmit` PASS
+- [x] 코드 품질 점검: `pnpm lint` PASS
+- [x] 통합 smoke 재실행: `pnpm check:supabase` PASS
+- [x] **walkthrough.md 작성** (결정 기록 7건 + 사용자 협의 5건 + 검증 5건 + 발견 5건)
+- [x] **pr_description.md 작성** (템플릿 준수, Key Review Points 4건)
+- [x] **Ship Commit**: `docs(spec-01-01): ship walkthrough and pr description` (sdd ship 자동)
+- [x] **Base branch 수동 생성**: sdd ship 이 자동 생성하지 않아 `git checkout -b phase-01-data-pipeline develop && git push -u origin phase-01-data-pipeline` 수행
+- [x] **Push**: `git push -u origin spec-01-01-bootstrap-supabase`
+- [x] **PR 생성**: `gh pr create --base phase-01-data-pipeline --body-file specs/spec-01-01-bootstrap-supabase/pr_description.md`
+- [x] **사용자 알림**: 푸시 완료 + PR URL 보고
 
 ---
 
@@ -121,5 +121,5 @@
 |---|---|
 | **총 Task 수** | 8 (Task 1·6 은 commit 없음, 실제 commit task = 6) |
 | **예상 commit 수** | 6 (Task 2, 3, 4, 5, 7, 8) |
-| **현재 단계** | Planning |
-| **마지막 업데이트** | 2026-05-16 |
+| **현재 단계** | Shipped (PR 대기) |
+| **마지막 업데이트** | 2026-05-17 |
