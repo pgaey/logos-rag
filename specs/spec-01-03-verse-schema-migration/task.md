@@ -29,18 +29,17 @@
 
 ## Task 2: Supabase CLI 셋업 + init + link
 
-> **사용자 직접 수행 필요**: brew 설치 + PAT 발급 + login. 에이전트는 init/link 명령 가이드.
-
 ### 2-1. 사용자가 직접 수행
-- [ ] `brew install supabase/tap/supabase`
-- [ ] Supabase Dashboard → Account → Access Tokens → "logos-rag-cli" 이름으로 PAT 발급, 안전한 곳에 보관
-- [ ] `supabase login` → PAT 입력 (OS keychain 저장)
+- [x] **CLI 설치 우회 경로**: brew 가 libcurl 심볼 불일치로 실패 → `pnpm add -g supabase` + 수동 postinstall + symlink 로 설치 (`supabase 2.98.2`)
+- [x] Supabase Dashboard → Account → Access Tokens → PAT 발급
+- [x] `supabase login` → 브라우저 verification code 입력 → keychain 저장 성공
 
 ### 2-2. 에이전트가 수행
-- [ ] `supabase init` (작업 디렉토리에서) → `supabase/` 디렉토리 생성
-- [ ] `supabase link --project-ref <user-supplied-ref>` → 사용자가 project-ref 알려주면 link
-- [ ] `git status` 로 새로 생긴 파일 확인 (`supabase/config.toml`, `supabase/.gitignore`, `supabase/seed.sql` 등)
-- [ ] Commit: `chore(spec-01-03): init supabase CLI workspace`
+- [x] `supabase projects list` 로 project ref 자동 발견 (`qmxeysejsxwoofmvjtcv`, logos-rag, Seoul)
+- [x] `supabase init` → `supabase/{config.toml, .gitignore, .temp/}` 생성
+- [x] `supabase link --project-ref qmxeysejsxwoofmvjtcv` 성공
+- [x] config.toml 민감정보 스캔 (project_id="rag" 로컬 식별자, api_url=127.0.0.1 로컬 dev studio — 모두 commit 안전)
+- [x] Commit: `chore(spec-01-03): init supabase CLI workspace`
 
 ---
 
