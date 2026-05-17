@@ -41,6 +41,7 @@ KJV (또는 WEB) 전체 verse 가 Supabase `verses` 테이블에 768차원 임�
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
 | `spec-01-01` | bootstrap-supabase | P? | Merged | `specs/spec-01-01-bootstrap-supabase/` |
+| `spec-01-02` | bible-source-fetch | P? | Active | `specs/spec-01-02-bible-source-fetch/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`
