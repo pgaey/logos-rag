@@ -23,7 +23,8 @@
 6. Google AI Studio (`https://aistudio.google.com`) 에서 Gemini API key 발급
 7. `.env.example` 를 `.env.local` 로 복사 후 모든 값 채우기: `cp .env.example .env.local`
 8. 연결 검증: `pnpm check:supabase` 실행 → 3줄 PASS 출력 확인
-9. 개발 서버: `pnpm dev` → http://localhost:3000
+9. 성경 데이터 fetch (최초 1회 또는 재생성 시): `pnpm fetch:bible` → `data/web-bible.json` 생성 (6.6MB, 31,102 verse) — repo 에 이미 commit 되어 있으므로 출처 변경·재현 필요 시에만 실행
+10. 개발 서버: `pnpm dev` → http://localhost:3000
 
 ## 환경변수
 
@@ -62,9 +63,12 @@ GitHub repo Settings → Branches → Add rule 에서 `main` 과 `develop` **두
 | `pnpm start` | 빌드 결과물 실행 |
 | `pnpm lint` | ESLint 검사 |
 | `pnpm check:supabase` | Postgres 연결 + pgvector extension 활성 검증 (로컬 전용) |
+| `pnpm fetch:bible` | gratis-bible/bible 에서 WEB 성경 OSIS XML fetch → `data/web-bible.json` 정규화 (로컬 전용) |
 
 ## 라이선스
 
 코드: 추후 결정 (TBD)
 
-성경 텍스트: KJV public domain. 출처 상세는 spec-01-02 진행 시 README 갱신 예정.
+성경 텍스트: World English Bible (WEB) — 100% public domain.
+출처: [gratis-bible/bible](https://github.com/gratis-bible/bible) (`en/web.xml`, OSIS XML).
+한국어 답변 생성에 사용되는 영문 원문이며, 본 repo 의 `data/web-bible.json` 으로 정규화·commit 되어 있음.
