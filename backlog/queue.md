@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-01** — 데이터 파이프라인 (data-pipeline) — 2 spec — 다음: spec-01-02-bible-source-fetch
+- **phase-01** — 데이터 파이프라인 (data-pipeline) — 2 spec — 다음: (spec 없음)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기

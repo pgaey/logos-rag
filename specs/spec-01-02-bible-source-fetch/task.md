@@ -75,15 +75,15 @@
 
 > 모든 작업 task 완료 후 `/hk-ship` 절차를 따릅니다.
 
-- [ ] 코드 품질 점검: `pnpm exec tsc --noEmit` PASS
-- [ ] 코드 품질 점검: `pnpm lint` PASS
-- [ ] 통합 smoke 재실행: `pnpm fetch:bible` PASS (결정성 확인 — 재실행 후 git diff 0)
-- [ ] **walkthrough.md 작성** — 출처 비교·선택 사유, 검증 결과, 발견 사항 (Opus 메인)
-- [ ] **pr_description.md 작성** — 템플릿 준수 (Opus 메인)
-- [ ] **Ship**: `bash .harness-kit/bin/sdd ship`
-- [ ] **Push**: `git push -u origin spec-01-02-bible-source-fetch`
-- [ ] **PR 생성**: `gh pr create --base phase-01-data-pipeline --body-file specs/spec-01-02-bible-source-fetch/pr_description.md --title "feat(spec-01-02): WEB bible 원문 fetch + 정규화"`
-- [ ] **사용자 알림**: PR URL 보고
+- [x] 코드 품질 점검: `pnpm exec tsc --noEmit` PASS
+- [x] 코드 품질 점검: `pnpm lint` PASS
+- [x] 통합 smoke 재실행: `pnpm fetch:bible` PASS (결정성 확인 — 재실행 후 git diff 0)
+- [x] **walkthrough.md 작성** — 결정 기록 7건 + 사용자 협의 4건 + 검증 6건 + 발견 4건
+- [x] **pr_description.md 작성** — 템플릿 준수, Key Review Points 4건
+- [x] **Ship**: `bash .harness-kit/bin/sdd ship`
+- [x] **Push**: `git push -u origin spec-01-02-bible-source-fetch`
+- [x] **PR 생성**: `gh pr create --base phase-01-data-pipeline --body-file ... --title "..."`
+- [x] **사용자 알림**: PR URL 보고
 
 ---
 
@@ -93,5 +93,5 @@
 |---|---|
 | **총 Task 수** | 5 (Task 1 의 1-1 만 노 commit, 나머지는 commit) |
 | **예상 commit 수** | 5 (Task 1-2, 2, 3, 4, 5) |
-| **현재 단계** | Planning (사용자 Plan Accept 대기) |
+| **현재 단계** | Shipped (PR 대기) |
 | **마지막 업데이트** | 2026-05-17 |
