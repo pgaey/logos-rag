@@ -84,13 +84,13 @@
 
 ---
 
-## Task 6: README 갱신 (Sonnet sub-agent 위임 후보)
+## Task 6: README 갱신 (Sonnet sub-agent 위임)
 
 ### 6-1. 셋업 섹션
-- [ ] Supabase CLI 설치 단계 (brew) 추가
-- [ ] Migration 적용 단계 (`supabase login` → `supabase link` → `supabase db push`) 추가
-- [ ] 기존 단계 번호 재정렬
-- [ ] Commit: `docs(spec-01-03): add supabase CLI + migration steps to README`
+- [x] Supabase CLI 설치 단계 (brew + pnpm fallback) 추가
+- [x] Migration 적용 단계 (login + link + db push) 추가
+- [x] 기존 단계 번호 재정렬 (8→10, 9→11, 10→12) + "3줄 PASS" → "4줄 PASS" 정정
+- [x] Commit: `docs(spec-01-03): add supabase CLI + migration steps to README` (706946b)
 
 ---
 
@@ -98,16 +98,16 @@
 
 > 모든 작업 task 완료 후 `/hk-ship` 절차를 따릅니다.
 
-- [ ] 코드 품질 점검: `pnpm exec tsc --noEmit` PASS
-- [ ] 코드 품질 점검: `pnpm lint` PASS
-- [ ] 통합 smoke 재실행: `pnpm check:supabase` 4단계 PASS
-- [ ] **walkthrough.md 작성** (Opus 메인)
-- [ ] **pr_description.md 작성** (Opus 메인)
-- [ ] **Ship**: `bash .harness-kit/bin/sdd ship`
-- [ ] sdd 자동 갱신분 (phase-01.md, queue.md) sync commit
-- [ ] **Push**: `git push -u origin spec-01-03-verse-schema-migration`
-- [ ] **PR 생성**: `gh pr create --base phase-01-data-pipeline --title "feat(spec-01-03): verses 스키마 + Supabase CLI 마이그레이션" --body-file ...`
-- [ ] **사용자 알림**: PR URL 보고
+- [x] 코드 품질 점검: `pnpm exec tsc --noEmit` PASS
+- [x] 코드 품질 점검: `pnpm lint` PASS
+- [x] 통합 smoke 재실행: `pnpm check:supabase` 4단계 PASS
+- [x] **walkthrough.md 작성** — 결정 9건 + 사용자 협의 3건 + 검증 4건 + 발견 5건
+- [x] **pr_description.md 작성** — 템플릿 준수, Key Review Points 4건
+- [x] **Ship**: `bash .harness-kit/bin/sdd ship`
+- [x] sdd 자동 갱신분 sync commit
+- [x] **Push**: `git push -u origin spec-01-03-verse-schema-migration`
+- [x] **PR 생성**: `gh pr create --base phase-01-data-pipeline ...`
+- [x] **사용자 알림**: PR URL 보고
 
 ---
 
@@ -117,5 +117,5 @@
 |---|---|
 | **총 Task 수** | 7 (Task 1-1, 4 는 노 commit) |
 | **예상 commit 수** | 7 (Task 1-2, 2-2, 3, 5, 6, Ship + sync) |
-| **현재 단계** | Planning (사용자 Plan Accept 대기) |
+| **현재 단계** | Shipped (PR 대기) |
 | **마지막 업데이트** | 2026-05-17 |
