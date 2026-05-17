@@ -149,7 +149,9 @@ async function main(): Promise<void> {
       ignoreAttributes: false,
       attributeNamePrefix: '',
       textNodeName: '#text',
-      isArray: (_name: string) => false,
+      // 형제 요소가 여러 개일 때 자동으로 배열로 묶도록 명시
+      // (div/chapter/verse 는 항상 컬렉션으로 다뤄야 함)
+      isArray: (name) => name === 'div' || name === 'chapter' || name === 'verse',
     })
     parsed = parser.parse(xmlText) as Record<string, unknown>
   } catch (err) {
@@ -169,7 +171,7 @@ async function main(): Promise<void> {
 
     const obj = node as Record<string, unknown>
 
-    // verse 노드 처리
+    // verse 노드 처리 (osisID 가 BOOK.CHAPTER.VERSE 3-part 인 경우만)
     if ('osisID' in obj && typeof obj['osisID'] === 'string') {
       const parsed2 = parseOsisID(obj['osisID'])
       if (parsed2) {
@@ -180,8 +182,9 @@ async function main(): Promise<void> {
           booksFound.add(bookCode)
           verses.push({ book: bookName, chapter, verse, text })
         }
+        return
       }
-      return
+      // book/chapter 레벨 (osisID 1-part / 2-part) — 자식으로 내려가야 하므로 fall-through
     }
 
     // 재귀 순회
