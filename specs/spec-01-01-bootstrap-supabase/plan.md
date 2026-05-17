@@ -59,9 +59,9 @@ sequenceDiagram
 ### Dependencies
 
 #### [MODIFY] `package.json`
-- `dependencies`: `@supabase/supabase-js` (^2.x)
-- `devDependencies`: `tsx` (^4.x)
-- `scripts`: `"check:supabase": "tsx scripts/check-supabase.ts"`
+- `dependencies`: `@supabase/supabase-js` (^2.x), **`pg` (^8.x)** ← Task 5 진행 중 추가 (pg_catalog 검증은 Supabase JS/PostgREST 로 불가 → 직접 Postgres TCP 가 표준)
+- `devDependencies`: `tsx` (^4.x), **`@types/pg`** (^8.x)
+- `scripts`: `"check:supabase": "tsx --env-file=.env.local scripts/check-supabase.ts"`
 
 ### Supabase 클라이언트 모듈
 
@@ -100,6 +100,10 @@ NEXT_PUBLIC_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_xxx
 SUPABASE_SECRET_KEY=sb_secret_xxx
 
+# Postgres 직접 연결 (Dashboard → Project Settings → Database → Connection string → URI)
+# 관리자 작업(extension 검증, 마이그레이션, 배치 적재) 전용. 절대 클라이언트 번들 노출 금지.
+SUPABASE_DB_URL=postgresql://postgres:[YOUR-PASSWORD]@db.YOUR-PROJECT.supabase.co:5432/postgres
+
 # Google AI Studio (Gemini)
 GEMINI_API_KEY=xxx
 ```
@@ -107,8 +111,9 @@ GEMINI_API_KEY=xxx
 ### 검증 스크립트
 
 #### [NEW] `scripts/check-supabase.ts`
-- `dotenv` 미사용 — `tsx --env-file=.env.local` 로 주입.
-- 단계: (1) `SELECT 1` (2) `pg_extension` 에서 `vector` 행 조회.
+- **`pg` 직접 연결** (`SUPABASE_DB_URL`). Supabase JS 는 PostgREST 경유라 `pg_catalog` 미노출 → 관리자 검증은 직접 Postgres TCP 가 표준.
+- SSL: `{ rejectUnauthorized: false }` (로컬 smoke 한정. 프로덕션 코드 아님).
+- 단계: (1) connect → (2) `SELECT 1` → (3) `SELECT extname FROM pg_extension WHERE extname = 'vector'`.
 - 콘솔 출력 형식:
   ```
   [check:supabase] connecting...

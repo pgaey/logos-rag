@@ -59,15 +59,18 @@
 
 ## Task 5: 검증 스크립트
 
-### 5-1. `scripts/check-supabase.ts` 작성 + npm script 등록
-- [ ] `scripts/check-supabase.ts` 작성
-  - 단계 1: `createServerSupabase()` → `rpc` 또는 `from('pg_extension').select('extname').limit(0)` 로 `SELECT 1` 대용 (Supabase JS 는 raw SQL 미지원 → `pg_extension` 조회로 연결 + 권한 동시 검증)
-  - 단계 2: `pg_extension.extname='vector'` 행 존재 확인
-  - 콘솔 출력 형식은 plan.md 참조
-  - 실패 시 `process.exit(1)`
-- [ ] `package.json` 의 `scripts` 에 `"check:supabase": "tsx --env-file=.env.local scripts/check-supabase.ts"` 추가
-- [ ] `pnpm exec tsc --noEmit` PASS
-- [ ] Commit: `feat(spec-01-01): add supabase connection check script`
+### 5-1. 구현 방식 변경 (plan 편차 — Constitution §5.6)
+- Supabase JS 는 PostgREST 경유라 `pg_catalog` 미노출 → **`pg` 직접 연결로 전환**
+- 추가 dep: `pg`, `@types/pg`
+- 추가 환경변수: `SUPABASE_DB_URL` (Session pooler URI)
+- plan.md 의 Dependencies / 환경변수 / 검증 스크립트 섹션 갱신 완료
+
+### 5-2. `scripts/check-supabase.ts` 작성 + npm script 등록
+- [x] `scripts/check-supabase.ts` 작성 (`pg` Client 로 SELECT 1 + pg_extension 조회)
+- [x] `package.json` 의 `scripts` 에 `"check:supabase": "tsx --env-file=.env.local scripts/check-supabase.ts"` 추가
+- [x] `pnpm exec tsc --noEmit` PASS
+- [x] `.env.example` 에 `SUPABASE_DB_URL` placeholder 추가 (사용자 직접)
+- [x] Commit: `feat(spec-01-01): add supabase connection check script with pg`
 
 ---
 
