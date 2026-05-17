@@ -10,7 +10,7 @@
 - [x] plan.md 작성
 - [x] task.md 작성 (이 파일)
 - [x] phase-01.md SPEC 표 자동 갱신 (sdd 자동)
-- [ ] 사용자 Plan Accept
+- [x] 사용자 Plan Accept
 
 ---
 
@@ -32,18 +32,18 @@
 > **분기점**: Task 2 첫 단계에서 후보 3개 fetch test 후 1개 확정. 사용자에게 결과 보고 + 승인 후 본격 구현.
 
 ### 2-1. 출처 후보 fetch test (커밋 없음)
-- [ ] 후보 A: `gratis-bible/bible` (USFX/XML) — WEB 파일 raw URL 시도
-- [ ] 후보 B: `wldeh/bible-api` (JSON) — WEB 파일 raw URL 시도
-- [ ] 후보 C: ebible.org WEB 공식 zip / JSON — 직접 fetch 시도
-- [ ] 각 후보의 (a) 응답 OK 여부 (b) 파싱 단순성 (c) 책·verse 누락 비교
-- [ ] **사용자에게 비교 결과 보고 + 1개 선택 받기**
+- [x] 후보 A: `gratis-bible/bible` (USFX/XML) — WEB 파일 raw URL 시도
+- [x] 후보 B: `wldeh/bible-api` (JSON) — WEB 파일 raw URL 시도
+- [x] 후보 C: ebible.org WEB 공식 zip / JSON — 직접 fetch 시도
+- [x] 각 후보의 (a) 응답 OK 여부 (b) 파싱 단순성 (c) 책·verse 누락 비교
+- [x] **사용자에게 비교 결과 보고 + 1개 선택 받기** → gratis-bible/bible 선택 (OSIS XML 5.2MB, 66권 완전, 각주 오염 없음)
 
 ### 2-2. `scripts/fetch-bible.ts` 작성 (Sonnet sub-agent 위임 후보)
-- [ ] 선택된 출처에서 fetch → parse → 평면 배열 정규화 → 검증 출력 → `data/web-bible.json` write
-- [ ] (필요 시) `pnpm add -D fast-xml-parser` 등 파싱 dep 1개
-- [ ] `package.json` 에 `"fetch:bible": "tsx scripts/fetch-bible.ts"` 추가
-- [ ] `pnpm exec tsc --noEmit` PASS
-- [ ] Commit: `feat(spec-01-02): add bible fetch + normalize script`
+- [x] 선택된 출처에서 fetch → parse → 평면 배열 정규화 → 검증 출력 → `data/web-bible.json` write
+- [x] (필요 시) `pnpm add fast-xml-parser` 등 파싱 dep 1개 (fast-xml-parser 5.8.0 runtime dep)
+- [x] `package.json` 에 `"fetch:bible": "tsx scripts/fetch-bible.ts"` 추가
+- [x] `pnpm exec tsc --noEmit` PASS
+- [x] Commit: `feat(spec-01-02): add bible fetch + normalize script`
 
 ---
 

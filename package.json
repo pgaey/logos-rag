@@ -7,10 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "check:supabase": "tsx --env-file=.env.local scripts/check-supabase.ts"
+    "check:supabase": "tsx --env-file=.env.local scripts/check-supabase.ts",
+    "fetch:bible": "tsx scripts/fetch-bible.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.4",
+    "fast-xml-parser": "^5.8.0",
     "next": "16.2.6",
     "pg": "^8.20.0",
     "react": "19.2.4",
