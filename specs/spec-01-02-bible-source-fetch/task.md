@@ -17,13 +17,13 @@
 ## Task 1: 브랜치 생성 + pre-flight 산출물 commit
 
 ### 1-1. spec 브랜치 분기
-- [ ] phase-01-data-pipeline 최신 확인 (이미 fast-forward 됨)
-- [ ] `git checkout -b spec-01-02-bible-source-fetch`
-- [ ] Commit: 없음
+- [x] phase-01-data-pipeline fast-forward 완료 (10 commits)
+- [x] `git checkout -b spec-01-02-bible-source-fetch`
+- [x] Commit: 없음
 
 ### 1-2. pre-flight 산출물 commit
-- [ ] `git add specs/spec-01-02-bible-source-fetch/ backlog/phase-01.md` (phase.md 의 spec 표가 sdd 에 의해 갱신됨)
-- [ ] Commit: `chore(spec-01-02): scaffold spec/plan/task artifacts`
+- [x] `git add backlog/phase-01.md backlog/queue.md specs/spec-01-02-bible-source-fetch/`
+- [x] Commit: `chore(spec-01-02): scaffold spec/plan/task artifacts` (0714290)
 
 ---
 
@@ -49,14 +49,16 @@
 
 ## Task 3: 데이터 산출물 생성 + commit
 
+> **Task 2-2 후속 버그 수정 1건 발생**: Sonnet 초안의 OSIS XML 파싱 두 버그 (`isArray:()=>false` + verse 외에도 `return`) 발견·수정 후 별도 commit (`a966d6c fix(spec-01-02): correct OSIS XML parsing`).
+
 ### 3-1. 실제 실행
-- [ ] `pnpm fetch:bible` 실행 → 콘솔 PASS 확인 (책 66 / verse 31,000+ / NULL 0)
-- [ ] `data/web-bible.json` 생성 확인 (~3-7MB)
-- [ ] 수동 검증: 첫 verse Genesis 1:1, 마지막 Revelation 22:21
-- [ ] `jq` 로 John 3:16 등 표본 verse 1-2개 추출 확인
+- [x] `pnpm fetch:bible` 실행 → 콘솔 PASS (책 66 / verse 31,102 / NULL 0)
+- [x] `data/web-bible.json` 생성 (6,595,522 bytes ≈ 6.6MB — 예상 3-7MB 범위 내)
+- [x] 수동 검증: 첫 verse Genesis 1:1 ✓, 마지막 Revelation 22:21 ✓
+- [x] `jq` 로 John 3:16 표본 추출 — WEB 표현 확인 ✓
 
 ### 3-2. Commit
-- [ ] Commit: `feat(spec-01-02): add WEB bible data (data/web-bible.json)`
+- [x] Commit: `feat(spec-01-02): add WEB bible data (data/web-bible.json)`
 
 ---
 
