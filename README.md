@@ -22,9 +22,14 @@
 5. Postgres 연결 문자열: Connect 버튼 → Direct 탭 → **Session pooler** URI 복사 (IPv4 호환 + 모든 작업 가능)
 6. Google AI Studio (`https://aistudio.google.com`) 에서 Gemini API key 발급
 7. `.env.example` 를 `.env.local` 로 복사 후 모든 값 채우기: `cp .env.example .env.local`
-8. 연결 검증: `pnpm check:supabase` 실행 → 3줄 PASS 출력 확인
-9. 성경 데이터 fetch (최초 1회 또는 재생성 시): `pnpm fetch:bible` → `data/web-bible.json` 생성 (6.6MB, 31,102 verse) — repo 에 이미 commit 되어 있으므로 출처 변경·재현 필요 시에만 실행
-10. 개발 서버: `pnpm dev` → http://localhost:3000
+8. Supabase CLI 설치: `brew install supabase/tap/supabase` (brew 실패 시 `pnpm add -g supabase` 후 `node $(pnpm root -g)/supabase/scripts/postinstall.js`)
+9. Supabase 프로젝트 연결 + 마이그레이션 적용
+   - `supabase login` (브라우저 인증 flow, PAT 발급 후 verification code 입력)
+   - `supabase link --project-ref <YOUR-PROJECT-REF>` (Dashboard → Project Settings → General → Reference ID)
+   - `supabase db push` (verses 테이블 + RLS 적용. 첫 실행 시 [Y/n] 프롬프트에 Y)
+10. 연결 검증: `pnpm check:supabase` 실행 → 4줄 PASS 출력 확인
+11. 성경 데이터 fetch (최초 1회 또는 재생성 시): `pnpm fetch:bible` → `data/web-bible.json` 생성 (6.6MB, 31,102 verse) — repo 에 이미 commit 되어 있으므로 출처 변경·재현 필요 시에만 실행
+12. 개발 서버: `pnpm dev` → http://localhost:3000
 
 ## 환경변수
 
