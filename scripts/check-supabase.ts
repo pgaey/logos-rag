@@ -59,6 +59,36 @@ async function main(): Promise<void> {
     ok = false
   }
 
+  try {
+    const tableRows = await client.query<{ table_name: string }>(
+      "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='verses' LIMIT 1",
+    )
+    if (tableRows.rows.length > 0) {
+      const colRows = await client.query<{ column_name: string }>(
+        "SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name='verses'",
+      )
+      const existingCols = colRows.rows.map((r) => r.column_name)
+      const requiredCols = ['id', 'book', 'chapter', 'verse', 'text', 'embedding']
+      const missingCols = requiredCols.filter((c) => !existingCols.includes(c))
+      if (missingCols.length === 0) {
+        console.log('[check:supabase] verses table ........ PASS')
+      } else {
+        console.log('[check:supabase] verses table ........ FAIL (missing columns)')
+        console.error('[check:supabase] missing columns:', missingCols.join(', '))
+        ok = false
+      }
+    } else {
+      console.log('[check:supabase] verses table ........ FAIL (table not found)')
+      ok = false
+    }
+  } catch (err) {
+    console.log(
+      '[check:supabase] verses table ........ FAIL',
+      err instanceof Error ? err.message : err,
+    )
+    ok = false
+  }
+
   await client.end()
 
   if (ok) {
