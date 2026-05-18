@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-01** — 데이터 파이프라인 (data-pipeline) — 3 spec — 다음: (spec 없음)
+- **phase-01** — 데이터 파이프라인 (data-pipeline) — 4 spec — 다음: spec-01-04-embedding-batch-script
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
