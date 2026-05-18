@@ -56,11 +56,11 @@
 
 ## Task 5: TS wrapper + 평가 스크립트 (Sonnet sub-agent)
 
-- [ ] `src/lib/search/cosine.ts` 작성 (Database['public']['Functions']['match_verses'] 타입 활용)
-- [ ] `scripts/eval-search.ts` 작성 (정량 hit rate + 정성 dump → 마크다운 리포트)
-- [ ] `package.json` 의 `scripts` 에 `"eval:search": "tsx --env-file=.env.local scripts/eval-search.ts"`
-- [ ] `pnpm exec tsc --noEmit` PASS
-- [ ] Commit: `feat(spec-01-05): add cosine search wrapper and eval script`
+- [x] `src/lib/search/cosine.ts` 작성 (Database['public']['Functions']['match_verses'] 타입 활용)
+- [x] `scripts/eval-search.ts` 작성 (정량 hit rate + 정성 dump → 마크다운 리포트)
+- [x] `package.json` 의 `scripts` 에 `"eval:search": "tsx --env-file=.env.local scripts/eval-search.ts"`
+- [x] `pnpm exec tsc --noEmit` PASS
+- [x] Commit: `feat(spec-01-05): add cosine search wrapper and eval script`
 
 ---
 

@@ -9,7 +9,8 @@
     "lint": "eslint",
     "check:supabase": "tsx --env-file=.env.local scripts/check-supabase.ts",
     "fetch:bible": "tsx scripts/fetch-bible.ts",
-    "embed:bible": "tsx --env-file=.env.local scripts/embed-bible.ts"
+    "embed:bible": "tsx --env-file=.env.local scripts/embed-bible.ts",
+    "eval:search": "tsx --env-file=.env.local scripts/eval-search.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
