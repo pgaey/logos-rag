@@ -27,6 +27,11 @@
 - [ ] 보류: spec-05-02 (dependency 해소 후 재검토)
 -->
 
+- [ ] **전체 31k verse 임베딩 적재** (현재 1,000/31,102) — Gemini 무료 tier RPD 1,000 한도 도달. 다음 중 하나 선택 시 promote:
+  - (a) Gemini Tier 1 billing 활성 후 `pnpm embed:bible` 재실행 (분 단위 완료, ~$0.10 미만)
+  - (b) v2 phase 에서 OpenAI text-embedding-3-small 등 다른 provider 도입
+  - 영향: spec-01-05 cosine 검색 평가 정확도. 현재 1,000 verse 로도 검색 logic 검증 가능하지만 평가셋 정답 verse 가 적재 안 됐을 수 있음
+
 ## 📋 대기 Phase
 
 > 다음에 진행할 phase 를 자유롭게 메모합니다 (사람이 직접 편집).
