@@ -8,9 +8,12 @@ import * as path from 'path'
 // outputDimensionality=768 옵션으로 verses.embedding(vector(768)) 스키마 유지 (Matryoshka).
 const EMBED_MODEL = 'gemini-embedding-001'
 const EMBED_DIMENSIONS = 768
-const BATCH_SIZE = 100
+// 무료 tier embed_content_free_tier_requests = RPM 100 (batch 안의 N contents 가 N requests
+// 로 카운트). BATCH_SIZE=1 + DELAY_MS=700 = 분당 ~85 requests 로 한도 안전.
+// 31,102 verse × 0.7s ≈ 6시간. Tier 1 활성화 시 BATCH_SIZE/DELAY_MS 환경변수로 조정 가능.
+const BATCH_SIZE = Number(process.env.EMBED_BATCH_SIZE ?? 1)
 const INSERT_CHUNK = 1000
-const DELAY_MS = Number(process.env.EMBED_DELAY_MS ?? 1000)
+const DELAY_MS = Number(process.env.EMBED_DELAY_MS ?? 700)
 const MAX_RETRIES = 3
 const BACKOFF_BASE_MS = 1000
 
@@ -97,8 +100,6 @@ async function runEmbedPass(client: Client, ai: GoogleGenAI): Promise<void> {
   }
 
   let processed = 0
-  let chunkIndex = 0
-  const totalChunks = Math.ceil(totalToProcess / BATCH_SIZE)
   let succeededChunks = 0
   let skippedChunks = 0
 
@@ -108,8 +109,6 @@ async function runEmbedPass(client: Client, ai: GoogleGenAI): Promise<void> {
     )
     if (rows.length === 0) break
 
-    chunkIndex++
-    const dots = '.'.repeat(12)
     const chunkStart = Date.now()
 
     let chunkSucceeded = false
@@ -166,13 +165,15 @@ async function runEmbedPass(client: Client, ai: GoogleGenAI): Promise<void> {
     if (chunkSucceeded) {
       succeededChunks++
       processed += rows.length
-      const elapsed = Date.now() - chunkStart
-      console.log(
-        `[embed:bible] chunk ${chunkIndex}/${totalChunks} (${rows.length} verses) ${dots} DONE (${elapsed}ms)`,
-      )
-      console.log(
-        `[embed:bible] progress: ${processed}/${totalToProcess} (${((processed / totalToProcess) * 100).toFixed(1)}%)`,
-      )
+      // BATCH_SIZE=1 일 때 chunk 마다 로그를 찍으면 31k 줄 — 1000 verse 마다 + 마지막에만 출력.
+      const prev = processed - rows.length
+      const crossedMilestone = Math.floor(processed / 1000) > Math.floor(prev / 1000)
+      if (crossedMilestone || processed === totalToProcess) {
+        const elapsed = Date.now() - chunkStart
+        console.log(
+          `[embed:bible] progress: ${processed}/${totalToProcess} (${((processed / totalToProcess) * 100).toFixed(1)}%) — last chunk ${elapsed}ms`,
+        )
+      }
     }
 
     await sleep(DELAY_MS)
