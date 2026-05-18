@@ -10,19 +10,19 @@
 - [x] plan.md 작성
 - [x] task.md 작성 (이 파일)
 - [x] phase-01.md SPEC 표 자동 갱신 (sdd 자동)
-- [ ] 사용자 Plan Accept
+- [x] 사용자 Plan Accept
 
 ---
 
 ## Task 1: 브랜치 생성 + pre-flight 산출물 commit
 
 ### 1-1. spec 브랜치 분기
-- [ ] phase-01-data-pipeline 최신 확인
-- [ ] `git checkout -b spec-01-04-embedding-batch-script`
+- [x] phase-01-data-pipeline 최신 (fast-forward 후 분기)
+- [x] `git checkout -b spec-01-04-embedding-batch-script`
 
 ### 1-2. pre-flight 산출물 commit
-- [ ] `git add backlog/phase-01.md backlog/queue.md specs/spec-01-04-embedding-batch-script/`
-- [ ] Commit: `chore(spec-01-04): scaffold spec/plan/task artifacts`
+- [x] `git add backlog/phase-01.md backlog/queue.md specs/spec-01-04-embedding-batch-script/`
+- [x] Commit: `chore(spec-01-04): scaffold spec/plan/task artifacts` (c6c995c)
 
 ---
 
@@ -48,15 +48,15 @@
 ## Task 3: check:supabase 확장 (Sonnet sub-agent 위임)
 
 ### 3-1. `scripts/check-supabase.ts` 에 5번째 검증 추가
-- [ ] `verses` 테이블의 total / NULL embedding count 조회
-- [ ] fail-soft 출력: `INFO (table empty)` / `INFO (X/Y filled)` / `PASS (Y/Y filled)`
-- [ ] exit code 항상 0 (INFO 는 informational)
+- [x] `verses` 테이블의 total / NULL embedding count 조회
+- [x] fail-soft 출력: `INFO (table empty)` / `INFO (X/Y filled)` / `PASS (Y/Y filled)`
+- [x] exit code 항상 0 (INFO 는 informational)
 
 ### 3-2. 통합 smoke
-- [ ] `pnpm check:supabase` 실행 → 5단계 출력. 적재 전이라 embeddings 행은 `INFO (table empty)` 예상
+- [x] `pnpm check:supabase` 실행 → 5단계 출력. 적재 전이라 embeddings 행은 `INFO (table empty)` 예상
 
 ### 3-3. Commit
-- [ ] Commit: `feat(spec-01-04): add embeddings status to check:supabase`
+- [x] Commit: `feat(spec-01-04): add embeddings status to check:supabase`
 
 ---
 

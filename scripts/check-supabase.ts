@@ -89,6 +89,32 @@ async function main(): Promise<void> {
     ok = false
   }
 
+  try {
+    const { rows: [stats] } = await client.query<{ total: string; nulls: string }>(
+      `SELECT COUNT(*)::text AS total,
+              COUNT(*) FILTER (WHERE embedding IS NULL)::text AS nulls
+       FROM verses`,
+    )
+    const total = Number(stats.total)
+    const nulls = Number(stats.nulls)
+    const filled = total - nulls
+    if (total === 0) {
+      console.log('[check:supabase] embeddings .......... INFO (table empty, run pnpm embed:bible)')
+    } else if (nulls > 0) {
+      console.log(
+        `[check:supabase] embeddings .......... INFO (${filled}/${total} filled, resume with pnpm embed:bible)`,
+      )
+    } else {
+      console.log(`[check:supabase] embeddings .......... PASS (${total}/${total} filled)`)
+    }
+  } catch (err) {
+    console.log(
+      '[check:supabase] embeddings .......... INFO (could not query embedding stats:',
+      err instanceof Error ? err.message : err,
+      ')',
+    )
+  }
+
   await client.end()
 
   if (ok) {
