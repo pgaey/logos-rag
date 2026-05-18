@@ -29,7 +29,8 @@
    - `supabase db push` (verses 테이블 + RLS 적용. 첫 실행 시 [Y/n] 프롬프트에 Y)
 10. 연결 검증: `pnpm check:supabase` 실행 → 4줄 PASS 출력 확인
 11. 성경 데이터 fetch (최초 1회 또는 재생성 시): `pnpm fetch:bible` → `data/web-bible.json` 생성 (6.6MB, 31,102 verse) — repo 에 이미 commit 되어 있으므로 출처 변경·재현 필요 시에만 실행
-12. 개발 서버: `pnpm dev` → http://localhost:3000
+12. 임베딩 적재 (최초 1회, 수십 분 소요): `pnpm embed:bible` → verses 테이블의 31,102 verse 에 768d 임베딩 채움. 중단 시 재실행 안전 (이미 적재된 verse 는 자동 skip).
+13. 개발 서버: `pnpm dev` → http://localhost:3000
 
 ## 환경변수
 
@@ -69,6 +70,7 @@ GitHub repo Settings → Branches → Add rule 에서 `main` 과 `develop` **두
 | `pnpm lint` | ESLint 검사 |
 | `pnpm check:supabase` | Postgres 연결 + pgvector extension 활성 검증 (로컬 전용) |
 | `pnpm fetch:bible` | gratis-bible/bible 에서 WEB 성경 OSIS XML fetch → `data/web-bible.json` 정규화 (로컬 전용) |
+| `pnpm embed:bible` | verses 테이블 text 컬럼을 Gemini text-embedding-004 로 임베딩 → embedding 컬럼 UPDATE (로컬 전용, 수십 분) |
 
 ## 라이선스
 
