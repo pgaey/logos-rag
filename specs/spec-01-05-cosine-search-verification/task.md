@@ -45,12 +45,12 @@
 
 ## Task 4: 평가셋 작성 (Opus 직접 — 도메인 판단 필요)
 
-- [ ] `data/eval-set.json` 작성:
-  - quantitative.en 5건 (Genesis 1~34 안)
-  - quantitative.ko 5건 (Genesis 1~34 안, 자연스러운 한국어)
-  - qualitative_ko 3건 (out-of-range)
-- [ ] 사용자 검토 요청 (한국어 표현 자연스러운가?)
-- [ ] Commit: `chore(spec-01-05): add evaluation set (Genesis quantitative + OoR qualitative)`
+- [x] `data/eval-set.json` 작성:
+  - quantitative.en 5건 (Genesis 1:1, 4:8, 7:11, 11:4, 22:9 — 모두 적재 범위)
+  - quantitative.ko 5건 (Genesis 1:1, 4:8, 7:11, 28:12, 22:9 — 자연스러운 한국어)
+  - qualitative_ko 3건 (1Cor 13, Ps 23, Lk 10 — out-of-range, 사람 판단)
+- [x] 사용자 검토 OK (1번 선택 — 그대로 commit)
+- [x] Commit: `chore(spec-01-05): add evaluation set (Genesis quantitative + OoR qualitative)`
 
 ---
 
