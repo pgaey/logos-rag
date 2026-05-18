@@ -18,6 +18,7 @@ RETURNS TABLE (
 )
 LANGUAGE sql
 STABLE
+SET search_path = extensions, public
 AS $$
   SELECT
     v.id,

@@ -34,10 +34,12 @@
 
 ## Task 3: 마이그레이션 적용 + types 재생성 (Opus 직접)
 
-- [ ] `supabase db push` → 적용 성공 확인
-- [ ] `supabase gen types typescript --linked > src/lib/db/types.ts` → match_verses 타입 포함 확인 (grep "match_verses")
-- [ ] `pnpm exec tsc --noEmit` PASS
-- [ ] Commit: `feat(spec-01-05): regen db types with match_verses fn`
+> **버그 1건**: 첫 push 시 `operator does not exist: extensions.vector <=> extensions.vector` — pgvector 의 `<=>` operator 도 extensions 스키마. 함수에 `SET search_path = extensions, public` 추가 후 재push 성공.
+
+- [x] `supabase db push` → 성공 (search_path fix 후)
+- [x] `supabase gen types typescript --linked > src/lib/db/types.ts` → match_verses 타입 포함 확인 (`Args: { match_count, query_embedding }`, `Returns: VerseMatch[]`)
+- [x] `pnpm exec tsc --noEmit` PASS
+- [x] Commit: `fix(spec-01-05): set search_path for pgvector operators + regen types`
 
 ---
 
