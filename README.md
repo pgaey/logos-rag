@@ -30,13 +30,14 @@
 10. 연결 검증: `pnpm check:supabase` 실행 → 4줄 PASS 출력 확인
 11. 성경 데이터 fetch (최초 1회 또는 재생성 시): `pnpm fetch:bible` → `data/web-bible.json` 생성 (6.6MB, 31,102 verse) — repo 에 이미 commit 되어 있으므로 출처 변경·재현 필요 시에만 실행
 12. 임베딩 적재: `pnpm embed:bible` → verses 테이블의 verse text 를 `gemini-embedding-001` 로 임베딩하여 embedding(768d) 컬럼 채움. **무료 tier 일일 1,000 requests (RPD) 한도** 에 막힘 → 전체 31,102 verse 적재는 (a) Tier 1 billing 활성 후 `EMBED_BATCH_SIZE=100 EMBED_DELAY_MS=0 pnpm embed:bible` (분 단위 완료) 또는 (b) 매일 1,000 씩 반복. 한도 도달 시 graceful exit (`quota exhausted (free-tier RPD)` 메시지), 다음 날 재실행으로 이어 적재.
-13. 개발 서버: `pnpm dev` → http://localhost:3000
+13. (선택) 검색 평가: `pnpm eval:search` → docs/eval/phase-01-search-report.md 생성 (정량 hit rate + 정성 결과). 임베딩 적재 진행률에 따라 결과 달라짐 — 현재 1,000 verse 기준 100% PASS 측정됨
+14. 개발 서버: `pnpm dev` → http://localhost:3000
 
 ## 환경변수
 
 | 변수 | 용도 | 노출 컨텍스트 |
 |---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase 프로젝트 API URL | 클라이언트 노출 OK |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase 프로젝트 base URL (예: `https://abcd.supabase.co`). **Dashboard 의 PostgREST endpoint (`/rest/v1/...`) 는 base URL 이 아님** — base URL 만 입력 | 클라이언트 노출 OK |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key (RLS 적용) | 클라이언트 노출 OK |
 | `SUPABASE_SECRET_KEY` | Supabase secret key (RLS 우회) | **서버 전용 — 절대 클라이언트 노출 금지** |
 | `SUPABASE_DB_URL` | Postgres 직접 연결 (Session pooler) | **로컬 스크립트 전용 — Vercel/클라이언트 노출 금지** |
@@ -71,6 +72,7 @@ GitHub repo Settings → Branches → Add rule 에서 `main` 과 `develop` **두
 | `pnpm check:supabase` | Postgres 연결 + pgvector extension 활성 검증 (로컬 전용) |
 | `pnpm fetch:bible` | gratis-bible/bible 에서 WEB 성경 OSIS XML fetch → `data/web-bible.json` 정규화 (로컬 전용) |
 | `pnpm embed:bible` | verses 의 verse text → `gemini-embedding-001` (`outputDimensionality:768`) → embedding 컬럼 UPDATE. 무료 tier RPD 1,000 도달 시 graceful exit, 재실행으로 이어 적재. Tier 1 활성 시 `EMBED_BATCH_SIZE` / `EMBED_DELAY_MS` env 로 가속 |
+| `pnpm eval:search` | data/eval-set.json (영문 5 + 한국어 5 + 정성 3) → match_verses RPC → 정량 hit rate + 정성 리포트 (`docs/eval/phase-01-search-report.md`) |
 
 ## 라이선스
 
