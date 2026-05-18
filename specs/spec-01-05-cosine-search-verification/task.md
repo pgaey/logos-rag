@@ -66,9 +66,9 @@
 
 ## Task 6: check:supabase 확장 (Sonnet sub-agent)
 
-- [ ] 6번째 검증 추가 (match_verses 함수 pg_proc 조회). FAIL 시 exit 1
-- [ ] `pnpm check:supabase` 6단계 PASS 확인
-- [ ] Commit: `feat(spec-01-05): verify match_verses fn in check:supabase`
+- [x] 6번째 검증 추가 (match_verses 함수 pg_proc 조회). FAIL 시 exit 1
+- [x] `pnpm check:supabase` 6단계 PASS 확인
+- [x] Commit: `feat(spec-01-05): verify match_verses fn in check:supabase`
 
 ---
 

@@ -115,6 +115,26 @@ async function main(): Promise<void> {
     )
   }
 
+  try {
+    const { rows } = await client.query<{ exists: boolean }>(
+      `SELECT EXISTS (
+        SELECT 1 FROM pg_proc WHERE proname = 'match_verses'
+      ) AS exists`,
+    )
+    if (rows[0]?.exists) {
+      console.log('[check:supabase] match_verses fn ..... PASS')
+    } else {
+      console.log('[check:supabase] match_verses fn ..... FAIL (run supabase db push)')
+      ok = false
+    }
+  } catch (err) {
+    console.log(
+      '[check:supabase] match_verses fn ..... FAIL',
+      err instanceof Error ? err.message : err,
+    )
+    ok = false
+  }
+
   await client.end()
 
   if (ok) {
