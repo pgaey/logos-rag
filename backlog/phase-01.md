@@ -44,7 +44,7 @@ KJV (또는 WEB) 전체 verse 가 Supabase `verses` 테이블에 768차원 임�
 | `spec-01-02` | bible-source-fetch | P? | Merged | `specs/spec-01-02-bible-source-fetch/` |
 | `spec-01-03` | verse-schema-migration | P? | Merged | `specs/spec-01-03-verse-schema-migration/` |
 | `spec-01-04` | embedding-batch-script | P? | Merged | `specs/spec-01-04-embedding-batch-script/` |
-| `spec-01-05` | cosine-search-verification | P? | Active | `specs/spec-01-05-cosine-search-verification/` |
+| `spec-01-05` | cosine-search-verification | P? | Merged | `specs/spec-01-05-cosine-search-verification/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`

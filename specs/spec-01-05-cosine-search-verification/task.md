@@ -95,23 +95,24 @@
 
 ## Task 9: README 갱신 (Sonnet sub-agent)
 
-- [ ] `## 셋업` 13번 (`pnpm eval:search`) 삽입, 14번 `pnpm dev` 로 번호 재정렬
-- [ ] `## 스크립트` 표에 `pnpm eval:search` 추가
-- [ ] Commit: `docs(spec-01-05): add eval:search step to README`
+- [x] `## 셋업` 13번 (`pnpm eval:search`) 삽입, 14번 `pnpm dev` 로 번호 재정렬
+- [x] `## 환경변수` 표의 `NEXT_PUBLIC_SUPABASE_URL` 행에 "/rest/v1/ 함정" caveat 추가 (Task 7 사고 방지)
+- [x] `## 스크립트` 표에 `pnpm eval:search` 추가
+- [x] Commit: `docs(spec-01-05): add eval:search step + supabase URL caveat to README` (c69f2e2)
 
 ---
 
 ## Task 10: Ship
 
-- [ ] 코드 품질: tsc / lint PASS
-- [ ] 통합 smoke: `pnpm check:supabase` 6단계 + `pnpm eval:search` 재실행
-- [ ] walkthrough.md 작성 (Opus 메인)
-- [ ] pr_description.md 작성 (Opus 메인)
-- [ ] `bash .harness-kit/bin/sdd ship`
-- [ ] sync commit
-- [ ] `git push -u origin spec-01-05-cosine-search-verification`
-- [ ] `gh pr create --base phase-01-data-pipeline ...`
-- [ ] 사용자 알림 + PR URL 보고
+- [x] 코드 품질: tsc / lint PASS
+- [x] 통합 smoke: `pnpm check:supabase` 6단계 PASS
+- [x] walkthrough.md 작성 — 결정 11건 + 사용자 협의 5건 + 검증 + 발견 6건
+- [x] pr_description.md 작성 — Key Review Points 5건
+- [x] `bash .harness-kit/bin/sdd ship`
+- [x] sync commit
+- [x] `git push -u origin spec-01-05-cosine-search-verification`
+- [x] `gh pr create --base phase-01-data-pipeline ...`
+- [x] 사용자 알림 + PR URL 보고
 
 ---
 
@@ -121,5 +122,5 @@
 |---|---|
 | **총 Task 수** | 10 (Task 7 는 노 commit) |
 | **예상 commit 수** | 9 |
-| **현재 단계** | Planning (사용자 Plan Accept 대기) |
+| **현재 단계** | Shipped (PR 대기) |
 | **마지막 업데이트** | 2026-05-18 |
