@@ -29,19 +29,19 @@
 ## Task 2: 의존성 + 스크립트 작성 (Sonnet sub-agent 위임)
 
 ### 2-1. 의존성 + npm script
-- [ ] `pnpm add @google/genai`
-- [ ] `package.json` 의 `scripts` 에 `"embed:bible": "tsx --env-file=.env.local scripts/embed-bible.ts"` 추가
+- [x] `pnpm add @google/genai`
+- [x] `package.json` 의 `scripts` 에 `"embed:bible": "tsx --env-file=.env.local scripts/embed-bible.ts"` 추가
 
 ### 2-2. `scripts/embed-bible.ts` 작성
-- [ ] 환경변수 검증 (`SUPABASE_DB_URL`, `GEMINI_API_KEY`)
-- [ ] pg Client 연결
-- [ ] 1pass: `data/web-bible.json` → 다건 INSERT (chunk 1000건씩, ON CONFLICT DO NOTHING)
-- [ ] 2pass: SELECT NULL → batchEmbedContents (100) → Promise.all UPDATE → progress log + sleep + backoff
-- [ ] 종료 검증: NULL count = 0
-- [ ] `pnpm exec tsc --noEmit` PASS
+- [x] 환경변수 검증 (`SUPABASE_DB_URL`, `GEMINI_API_KEY`)
+- [x] pg Client 연결
+- [x] 1pass: `data/web-bible.json` → 다건 INSERT (chunk 1000건씩, ON CONFLICT DO NOTHING)
+- [x] 2pass: SELECT NULL → batchEmbedContents (100) → Promise.all UPDATE → progress log + sleep + backoff
+- [x] 종료 검증: NULL count = 0
+- [x] `pnpm exec tsc --noEmit` PASS
 
 ### 2-3. Commit
-- [ ] Commit: `feat(spec-01-04): add bible embedding batch script`
+- [x] Commit: `feat(spec-01-04): add bible embedding batch script`
 
 ---
 

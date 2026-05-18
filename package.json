@@ -8,9 +8,11 @@
     "start": "next start",
     "lint": "eslint",
     "check:supabase": "tsx --env-file=.env.local scripts/check-supabase.ts",
-    "fetch:bible": "tsx scripts/fetch-bible.ts"
+    "fetch:bible": "tsx scripts/fetch-bible.ts",
+    "embed:bible": "tsx --env-file=.env.local scripts/embed-bible.ts"
   },
   "dependencies": {
+    "@google/genai": "^2.4.0",
     "@supabase/supabase-js": "^2.105.4",
     "fast-xml-parser": "^5.8.0",
     "next": "16.2.6",
