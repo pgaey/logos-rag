@@ -1,0 +1,78 @@
+{
+  "_meta": {
+    "spec": "spec-01-05-cosine-search-verification",
+    "version": "1",
+    "embedded_range": "Genesis 1~34 (1,000 / 31,102 verses)",
+    "policy": "quantitative 의 expected 는 적재 범위 안에서만. qualitative_ko 는 out-of-range — 사람 판단 정성 검증"
+  },
+  "quantitative": {
+    "en": [
+      {
+        "query": "In the beginning God created the heavens and the earth",
+        "expected": { "book": "Genesis", "chapter": 1, "verse": 1 },
+        "note": "거의 그대로 인용 — top-1 hit 기대"
+      },
+      {
+        "query": "Cain killed his brother Abel in the field",
+        "expected": { "book": "Genesis", "chapter": 4, "verse": 8 },
+        "note": "사건 paraphrase"
+      },
+      {
+        "query": "Noah built an ark and the great flood covered the earth",
+        "expected": { "book": "Genesis", "chapter": 7, "verse": 11 },
+        "note": "이야기 요약 — 7:11~24 어디든 hit 면 PASS"
+      },
+      {
+        "query": "the people built a tower to reach heaven and God confused their language",
+        "expected": { "book": "Genesis", "chapter": 11, "verse": 4 },
+        "note": "Babel — 11:4~9 hit 면 PASS"
+      },
+      {
+        "query": "Abraham was about to sacrifice his son Isaac on the altar",
+        "expected": { "book": "Genesis", "chapter": 22, "verse": 9 },
+        "note": "Isaac binding — 22:1~14 hit 면 PASS"
+      }
+    ],
+    "ko": [
+      {
+        "query": "태초에 하나님이 천지를 창조하셨다",
+        "expected": { "book": "Genesis", "chapter": 1, "verse": 1 },
+        "note": "한→영 cross-lingual — Genesis 1:1 top-1 기대"
+      },
+      {
+        "query": "가인이 들에서 동생 아벨을 죽였다",
+        "expected": { "book": "Genesis", "chapter": 4, "verse": 8 },
+        "note": "한국어 paraphrase"
+      },
+      {
+        "query": "노아의 방주와 대홍수",
+        "expected": { "book": "Genesis", "chapter": 7, "verse": 11 },
+        "note": "Noah/flood — 6~9장 어디든 PASS"
+      },
+      {
+        "query": "야곱이 사다리 꿈을 꾸었다",
+        "expected": { "book": "Genesis", "chapter": 28, "verse": 12 },
+        "note": "Jacob ladder — 28:10~17 hit 면 PASS"
+      },
+      {
+        "query": "아브라함이 이삭을 제물로 바치려 했다",
+        "expected": { "book": "Genesis", "chapter": 22, "verse": 9 },
+        "note": "한국어 Isaac binding — 22:1~14 hit 면 PASS"
+      }
+    ]
+  },
+  "qualitative_ko": [
+    {
+      "query": "사랑은 오래 참고 온유하다",
+      "note": "1 Corinthians 13 — out-of-range. Genesis 안에서 사랑/관계 관련 verse 가 나오는지 사람 판단"
+    },
+    {
+      "query": "여호와는 나의 목자시니 내게 부족함이 없으리로다",
+      "note": "Psalm 23 — out-of-range. Genesis 안에서 목자/인도 관련 verse (e.g. 야곱이 양치는 장면) 가 나오는지"
+    },
+    {
+      "query": "선한 사마리아인의 비유",
+      "note": "Luke 10 — out-of-range. Genesis 안에서 자비/도움 관련 verse 가 나오는지 (없어도 정상 — out-of-distribution)"
+    }
+  ]
+}
