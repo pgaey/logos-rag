@@ -144,19 +144,28 @@ async function runEmbedPass(client: Client, ai: GoogleGenAI): Promise<void> {
         chunkSucceeded = true
         break
       } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
         if (attempt === MAX_RETRIES) {
           console.error(
             `[embed:bible] chunk skipped after ${MAX_RETRIES} retries:`,
-            err instanceof Error ? err.message : err,
+            msg,
           )
           skippedChunks++
-          // 무한 루프 방지를 위해 재시도 불가 시 즉시 중단
+          // 무료 tier 일일 한도(RPD 1000) 도달이면 정상 종료 — 내일 reset 후 재실행 안내.
+          // 그 외 에러는 비정상 → exit 1.
+          if (msg.includes('RESOURCE_EXHAUSTED') || msg.includes('429')) {
+            console.log(
+              `[embed:bible] quota exhausted (free-tier RPD). resume tomorrow with pnpm embed:bible.`,
+            )
+            await client.end()
+            process.exit(0)
+          }
           process.exit(1)
         }
         const backoff = BACKOFF_BASE_MS * Math.pow(2, attempt)
         console.error(
           `[embed:bible] chunk attempt ${attempt + 1} failed, retrying in ${backoff}ms:`,
-          err instanceof Error ? err.message : err,
+          msg,
         )
         await sleep(backoff)
       }
@@ -185,14 +194,18 @@ async function runEmbedPass(client: Client, ai: GoogleGenAI): Promise<void> {
 }
 
 // ── 종료 검증 ────────────────────────────────────────────────────────────────
+// NULL 이 남아있어도 quota 도달 등 정상 사유면 informational. 비정상 fail 은 chunk catch
+// 에서 이미 process.exit(1) 처리됨.
 async function verifyNoNulls(client: Client): Promise<void> {
   const { rows } = await client.query<{ count: string }>(
     'SELECT COUNT(*) AS count FROM verses WHERE embedding IS NULL',
   )
   const count = Number(rows[0]?.count ?? 0)
   if (count > 0) {
-    console.error(`[embed:bible] FAIL: ${count} NULL embeddings remain`)
-    process.exit(1)
+    console.log(
+      `[embed:bible] verification: ${count} NULL embeddings remain (resume with pnpm embed:bible)`,
+    )
+    return
   }
   console.log('[embed:bible] verification: 0 NULL embeddings remaining')
 }

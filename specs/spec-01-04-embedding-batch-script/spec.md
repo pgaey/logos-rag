@@ -93,14 +93,28 @@ flowchart LR
 
 (미실행)
 
-## ✅ Definition of Done
+## ⚠️ Scope 축소 (Constitution §5.6 deviation)
 
-- [ ] `pnpm embed:bible` 1회 실행으로 31,102 verse 모두 임베딩 적재 완료
-- [ ] 적재 후 `pnpm check:supabase` 확장 검증 PASS (NULL embedding 0건 / row count 31,102)
-- [ ] 적재 중간 중단 → 재실행 시 이미 처리된 verse 는 skip, 남은 verse 만 처리됨 (수동 확인)
-- [ ] Gemini 무료 tier 안에서 비용 발생 0 (Google AI Studio billing 0 확인)
-- [ ] `pnpm exec tsc --noEmit` PASS
-- [ ] `pnpm lint` PASS
-- [ ] README 셋업 가이드에 `pnpm embed:bible` 단계 추가
+원래 DoD = "31,102 verse 전체 임베딩". 실행 중 발견:
+- **Gemini 무료 tier `embed_content_free_tier_requests` = 1,000 RPD** (일일 1,000 requests). batch 안 N contents 가 N requests 로 카운트
+- 전체 적재 시 31일 소요 → 학습 페이스 비현실적
+
+**사용자 결정**: 무료 유지 + 오늘 한도 안에서 적재된 만큼으로 spec 마무리. 결과적으로 **정확히 1,000 verse 적재 완료** (한도 = 적재 수).
+
+**전체 31k 적재**는 다음 중 하나로 미룸 → `backlog/queue.md` Icebox 등록:
+1. Gemini Tier 1 (billing) 활성화 후 재실행
+2. v2 phase 에서 OpenAI 등 다른 provider 도입
+
+## ✅ Definition of Done (수정)
+
+- [x] `pnpm embed:bible` 인프라 (script + check 확장) 완비
+- [x] `embed:bible` 첫 실행으로 무료 tier 한도까지 적재 (현재 **1,000/31,102**)
+- [x] `pnpm check:supabase` 확장 검증 PASS — embeddings 행이 informational `INFO (1000/31102 filled, resume with pnpm embed:bible)` 출력
+- [x] 적재 중간 중단 → 재실행 시 이미 처리된 verse 는 skip (실측 확인: `1pass done — inserted 0 verses (31102 already existed)`)
+- [x] Gemini 무료 tier 안에서 비용 발생 0
+- [x] `pnpm exec tsc --noEmit` PASS
+- [x] `pnpm lint` PASS
+- [ ] README 셋업 가이드에 `pnpm embed:bible` 단계 + Tier 1 안내 (Task 5 에서 처리)
 - [ ] `walkthrough.md` 와 `pr_description.md` ship commit
 - [ ] `spec-01-04-embedding-batch-script` 브랜치 push + PR → `phase-01-data-pipeline` 머지 대기
+- [ ] backlog Icebox 에 "전체 31k 적재" 항목 등록
