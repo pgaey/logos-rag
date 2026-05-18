@@ -26,9 +26,9 @@
 
 ## Task 2: match_verses 마이그레이션
 
-- [ ] `supabase migration new add_match_verses_function`
-- [ ] SQL 작성 (plan.md "Proposed Changes / Migration" 의 SQL 그대로)
-- [ ] Commit: `feat(spec-01-05): add match_verses RPC migration`
+- [x] `supabase migration new add_match_verses_function` → `supabase/migrations/20260518133909_add_match_verses_function.sql`
+- [x] SQL 작성 (cosine `<=>`, `1 - distance` similarity, `WHERE embedding IS NOT NULL`)
+- [x] Commit: `feat(spec-01-05): add match_verses RPC migration`
 
 ---
 
