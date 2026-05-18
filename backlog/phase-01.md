@@ -104,30 +104,46 @@ KJV (또는 WEB) 전체 verse 가 Supabase `verses` 테이블에 768차원 임�
 | Phase base branch 사용 | yes / no | **yes** (`phase-01-data-pipeline`) | spec PR 들이 phase 브랜치로 누적 → phase 단위 통합 테스트 후 develop 진입. 학습 목적으로 한 번 경험 |
 | 성경 텍스트 출처 | KJV / WEB | **spec-01-02 에서 비교 후 결정** | 둘 다 public domain. WEB 은 현대 영어, KJV 는 고전. 임베딩 품질 영향 검토 후 선택 |
 | Supabase CLI 도입 | yes / Dashboard 수동 | **spec-01-03 에서 결정** | CLI = migration 버전 관리·재현성 ↑, 학습 부담 ↑ |
-| pgvector 인덱스 종류 | ivfflat / hnsw / 없음 | **spec-01-03 에서 결정** | 31k row 규모에선 인덱스 없이도 동작 가능. hnsw 가 recall 우수하나 빌드 시간 ↑ |
+| pgvector 인덱스 종류 | ivfflat / hnsw / 없음 | **없음** (spec-01-03 결정) | 31k row 규모(현재 1k 적재)에서 brute force 충분. 검증 후 spec-x 로 추가 가능 |
+| 임베딩 모델 마이그레이션 | text-embedding-004 / gemini-embedding-001 | **gemini-embedding-001 + outputDimensionality:768** (spec-01-04) | text-embedding-004 가 2026-01-14 deprecated. Matryoshka 로 스키마(vector(768)) 유지 |
+| 적재 범위 | 31,102 전체 / 부분 | **1,000 / 31,102 (Genesis 1~34)** (spec-01-04) | 무료 tier RPD 1,000 한도. 잔여는 backlog Icebox |
+| 평가 paradigm | 전체 적재 가정 / 적재 범위 정량 + 범위 밖 정성 | **후자** (spec-01-05) | 1,000 verse 상태에서 측정 의미 유지. 적재 범위 내 hit rate + 범위 밖 사람 판단 |
 
 ## 🧪 통합 테스트 시나리오 (간결)
 
-> 본 phase 의 Done 조건 중 하나. spec-01-05 의 평가 스크립트가 시나리오 1·2 를 자동 실행하고 리포트를 생성합니다.
+> 본 phase 의 Done 조건 중 하나. spec-01-05 의 `pnpm eval:search` 가 시나리오 1·2·3 을 자동 실행하고 리포트를 생성합니다.
+> **현재 적재 상태**: 1,000 / 31,102 verse (Genesis 1~34만). spec-01-04 의 무료 tier RPD 한도 deviation 반영.
 
-### 시나리오 1: 영문 verse → 의미 유사 영문 verse 검색
-- **Given**: `verses` 테이블에 KJV 전체 + 768d 임베딩 적재 완료
-- **When**: 임의 verse 10개 (예: John 3:16, 1 Cor 13:4, Psalm 23:1 …) 의 임베딩으로 `match_verses(embedding, 5)` 호출
-- **Then**: 각 결과 top-5 안에 평가자 기준 "의미 유사" verse 가 최소 1건 포함되는 비율 ≥ 80%
+### 시나리오 1: 영문 query → Genesis 범위 안 정답 verse 검색 (정량)
+- **Given**: verses 테이블에 Genesis 1~34 의 1,000 verse 가 768d 임베딩과 함께 적재
+- **When**: 영문 5 query (Genesis 1:1, 4:8, 7:11, 11:4, 22:9 정답) 를 `gemini-embedding-001` 로 임베딩하여 `match_verses(embedding, 5)` 호출
+- **Then**: top-5 안에 정답 chapter 의 verse 가 포함되는 비율 ≥ 60% (chapter 매칭 = HIT, verse 까지 정확 = EXACT)
 - **연관 SPEC**: spec-01-03, spec-01-04, spec-01-05
 
-### 시나리오 2: 한국어 자연어 → cross-lingual 영문 verse 검색
-- **Given**: 시나리오 1 의 상태 + Gemini `text-embedding-004` 한국어 입력 가능 확인
-- **When**: 한국어 질문 10개 (예: "사랑이란 무엇인가", "두려워하지 말라", "선한 사마리아인 비유" …) 를 임베딩하여 `match_verses(embedding, 5)` 호출
-- **Then**: top-5 안에 의미 관련 영문 verse 가 최소 1건 포함되는 비율 ≥ 60%
+### 시나리오 2: 한국어 query → cross-lingual 영문 verse 검색 (정량)
+- **Given**: 시나리오 1 의 상태
+- **When**: 한국어 5 query (Genesis 1:1, 4:8, 7:11, 28:12, 22:9 정답) 를 임베딩하여 `match_verses(embedding, 5)` 호출
+- **Then**: top-5 안에 정답 chapter 의 verse 가 포함되는 비율 ≥ 60%
 - **연관 SPEC**: spec-01-04, spec-01-05
+
+### 시나리오 3: out-of-range 한국어 query → 정성 합리성 (사람 판단)
+- **Given**: 시나리오 1·2 의 상태
+- **When**: 적재 범위 밖 한국어 query 3건 (1Cor 13 "사랑은 오래 참고" / Ps 23 "여호와는 나의 목자" / Lk 10 "선한 사마리아인") 으로 `match_verses(embedding, 3)` 호출
+- **Then**: top-3 결과의 verse text 가 Genesis 안에서 의미적으로 합리적인지 사람이 판단 (정량 metric 없음, "out-of-distribution" 도 정상)
+- **연관 SPEC**: spec-01-05
 
 ### 통합 테스트 실행
 ```bash
-# 본 phase 의 평가 스크립트 (spec-01-05 에서 작성)
-pnpm tsx scripts/eval-search.ts
+pnpm eval:search
 # → docs/eval/phase-01-search-report.md 생성
+# → 콘솔: EN: X/5 (%), KO: Y/5 (%), 합산: (X+Y)/10 (%)
 ```
+
+### 검증 결과 (2026-05-18 측정)
+- 시나리오 1 (EN 정량): **5/5 (100%)** ✓
+- 시나리오 2 (KO 정량): **5/5 (100%)** ✓
+- 시나리오 3 (정성): 3건 모두 의미 합리적 (사용자 판단 OK)
+- 리포트: `docs/eval/phase-01-search-report.md`
 
 ## 🔗 의존성
 
@@ -151,10 +167,10 @@ pnpm tsx scripts/eval-search.ts
 
 ## 🏁 Phase Done 조건
 
-- [ ] 모든 SPEC 이 `phase-01-data-pipeline` 으로 merge
+- [ ] 모든 SPEC 이 `phase-01-data-pipeline` 으로 merge (spec-01-05 머지 후 5/5 완료)
 - [ ] `phase-01-data-pipeline` 가 `develop` 으로 merge (`/hk-phase-ship` 시 `gh pr create --base develop` 수동 override)
-- [ ] 시나리오 1·2 정량 기준 통과 (성공 기준 3·4 충족)
-- [ ] 성공 기준 정량 측정 결과를 본 문서 하단 "검증 결과" 섹션에 기록
+- [x] 시나리오 1·2 정량 기준 통과 (10/10 = 100%, spec-01-05 검증)
+- [x] 시나리오 3 정성 사용자 판단 OK
 - [ ] 사용자 최종 승인
 
 ## 📊 검증 결과 (phase 완료 시 작성)
