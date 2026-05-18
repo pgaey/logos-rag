@@ -4,7 +4,10 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 // ── 상수 ────────────────────────────────────────────────────────────────────
-const EMBED_MODEL = 'text-embedding-004'
+// text-embedding-004 가 2026-01-14 deprecated → gemini-embedding-001 로 마이그레이션.
+// outputDimensionality=768 옵션으로 verses.embedding(vector(768)) 스키마 유지 (Matryoshka).
+const EMBED_MODEL = 'gemini-embedding-001'
+const EMBED_DIMENSIONS = 768
 const BATCH_SIZE = 100
 const INSERT_CHUNK = 1000
 const DELAY_MS = Number(process.env.EMBED_DELAY_MS ?? 1000)
@@ -116,6 +119,7 @@ async function runEmbedPass(client: Client, ai: GoogleGenAI): Promise<void> {
         const response = await ai.models.embedContent({
           model: EMBED_MODEL,
           contents: rows.map((r) => r.text),
+          config: { outputDimensionality: EMBED_DIMENSIONS },
         })
 
         const embeddings = response.embeddings
