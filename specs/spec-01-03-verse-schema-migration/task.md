@@ -1,0 +1,121 @@
+# Task List: spec-01-03
+
+> 모든 task 는 한 commit 에 대응합니다 (One Task = One Commit).
+> 매 commit 직후 본 파일의 체크박스를 갱신해야 합니다.
+
+## Pre-flight (Plan 작성 단계)
+
+- [x] Spec ID 확정 및 디렉토리 생성 (sdd 자동)
+- [x] spec.md 작성
+- [x] plan.md 작성
+- [x] task.md 작성 (이 파일)
+- [x] phase-01.md SPEC 표 자동 갱신 (sdd 자동)
+- [x] 사용자 Plan Accept
+
+---
+
+## Task 1: 브랜치 생성 + pre-flight 산출물 commit
+
+### 1-1. spec 브랜치 분기
+- [x] phase-01-data-pipeline 최신 (방금 fast-forward)
+- [x] `git checkout -b spec-01-03-verse-schema-migration`
+- [x] Commit: 없음
+
+### 1-2. pre-flight 산출물 commit
+- [x] `git add backlog/phase-01.md backlog/queue.md specs/spec-01-03-verse-schema-migration/`
+- [x] Commit: `chore(spec-01-03): scaffold spec/plan/task artifacts`
+
+---
+
+## Task 2: Supabase CLI 셋업 + init + link
+
+### 2-1. 사용자가 직접 수행
+- [x] **CLI 설치 우회 경로**: brew 가 libcurl 심볼 불일치로 실패 → `pnpm add -g supabase` + 수동 postinstall + symlink 로 설치 (`supabase 2.98.2`)
+- [x] Supabase Dashboard → Account → Access Tokens → PAT 발급
+- [x] `supabase login` → 브라우저 verification code 입력 → keychain 저장 성공
+
+### 2-2. 에이전트가 수행
+- [x] `supabase projects list` 로 project ref 자동 발견 (`qmxeysejsxwoofmvjtcv`, logos-rag, Seoul)
+- [x] `supabase init` → `supabase/{config.toml, .gitignore, .temp/}` 생성
+- [x] `supabase link --project-ref qmxeysejsxwoofmvjtcv` 성공
+- [x] config.toml 민감정보 스캔 (project_id="rag" 로컬 식별자, api_url=127.0.0.1 로컬 dev studio — 모두 commit 안전)
+- [x] Commit: `chore(spec-01-03): init supabase CLI workspace`
+
+---
+
+## Task 3: Migration 파일 작성
+
+### 3-1. `supabase migration new` + SQL 작성
+- [x] `supabase migration new create_verses` → `supabase/migrations/20260517144458_create_verses.sql`
+- [x] SQL 작성 (CREATE EXTENSION vector + CREATE TABLE verses + UNIQUE constraint + RLS ENABLE + COMMENT)
+- [x] Commit: `feat(spec-01-03): add create_verses migration`
+
+---
+
+## Task 4: 마이그레이션 적용 + 검증
+
+### 4-1. 에이전트가 수행 (사용자 위임)
+- [x] `supabase db push --include-all` 실행
+- [x] 첫 시도 에러: `type "vector" does not exist` — Supabase 가 pgvector 를 `extensions` 스키마에 둬서 발생
+- [x] SQL 수정 (`vector(768)` → `extensions.vector(768)`) + 재push 성공
+- [x] 별도 `fix(spec-01-03): use extensions.vector for embedding column` commit 으로 history 보존
+
+### 4-2. 추가 검증
+- [ ] Task 5 의 확장된 `pnpm check:supabase` 가 formal verification 역할
+
+---
+
+## Task 5: Generated types + check:supabase 확장 (Sonnet sub-agent 위임 후보)
+
+### 5-1. Generated types 생성
+- [x] `supabase gen types typescript --linked > src/lib/db/types.ts`
+- [x] 결과 파일에 verses 테이블 타입 포함 확인 (grep verses)
+
+### 5-2. `scripts/check-supabase.ts` 확장
+- [x] 기존 SELECT 1 + pgvector 검사 뒤에 verses 테이블 + 컬럼 6개 검증 한 단계 추가
+- [x] 출력 형식: `[check:supabase] verses table ........ PASS / FAIL`
+- [x] `pnpm exec tsc --noEmit` PASS
+
+### 5-3. 통합 smoke
+- [x] `pnpm check:supabase` → 4단계 PASS 출력 확인
+
+### 5-4. Commit
+- [x] Commit: `feat(spec-01-03): add db types and extend check:supabase with verses verify`
+
+---
+
+## Task 6: README 갱신 (Sonnet sub-agent 위임)
+
+### 6-1. 셋업 섹션
+- [x] Supabase CLI 설치 단계 (brew + pnpm fallback) 추가
+- [x] Migration 적용 단계 (login + link + db push) 추가
+- [x] 기존 단계 번호 재정렬 (8→10, 9→11, 10→12) + "3줄 PASS" → "4줄 PASS" 정정
+- [x] Commit: `docs(spec-01-03): add supabase CLI + migration steps to README` (706946b)
+
+---
+
+## Task 7: Ship
+
+> 모든 작업 task 완료 후 `/hk-ship` 절차를 따릅니다.
+
+- [x] 코드 품질 점검: `pnpm exec tsc --noEmit` PASS
+- [x] 코드 품질 점검: `pnpm lint` PASS
+- [x] 통합 smoke 재실행: `pnpm check:supabase` 4단계 PASS
+- [x] **walkthrough.md 작성** — 결정 9건 + 사용자 협의 3건 + 검증 4건 + 발견 5건
+- [x] **pr_description.md 작성** — 템플릿 준수, Key Review Points 4건
+- [x] **Ship**: `bash .harness-kit/bin/sdd ship`
+- [x] sdd 자동 갱신분 sync commit
+- [x] **Push**: `git push -u origin spec-01-03-verse-schema-migration`
+- [x] **PR 생성**: `gh pr create --base phase-01-data-pipeline ...`
+- [x] **사용자 알림**: PR URL 보고
+
+---
+
+## 진행 요약
+
+| 항목 | 값 |
+|---|---|
+| **총 Task 수** | 7 (Task 1-1, 4 는 노 commit) |
+| **예상 commit 수** | 7 (Task 1-2, 2-2, 3, 5, 6, Ship + sync) |
+| **현재 단계** | Shipped (PR 대기) |
+| **마지막 업데이트** | 2026-05-17 |
