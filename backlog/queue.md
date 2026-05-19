@@ -8,13 +8,14 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-01** — 데이터 파이프라인 (data-pipeline) — 5 spec — 다음: (spec 없음)
+(active phase 없음. `bin/sdd phase new <slug>` 로 시작)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
 
 <!-- sdd:specx:start -->
 없음
+- [ ] spec-x-phase-doc-html — phase-doc-html
 <!-- sdd:specx:end -->
 
 ## 🧊 Icebox
@@ -55,6 +56,7 @@
 
 <!-- sdd:done:start -->
 없음
+- **phase-01** — 데이터 파이프라인 (data-pipeline) — completed 2026-05-19
 <!-- sdd:done:end -->
 
 ---
