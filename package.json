@@ -11,6 +11,7 @@
     "fetch:bible": "tsx scripts/fetch-bible.ts",
     "embed:bible": "tsx --env-file=.env.local scripts/embed-bible.ts",
     "eval:search": "tsx --env-file=.env.local scripts/eval-search.ts",
+    "search:prompt": "tsx --env-file=.env.local scripts/search-prompt.ts",
     "test": "vitest run"
   },
   "dependencies": {
