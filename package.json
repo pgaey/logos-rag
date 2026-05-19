@@ -10,7 +10,8 @@
     "check:supabase": "tsx --env-file=.env.local scripts/check-supabase.ts",
     "fetch:bible": "tsx scripts/fetch-bible.ts",
     "embed:bible": "tsx --env-file=.env.local scripts/embed-bible.ts",
-    "eval:search": "tsx --env-file=.env.local scripts/eval-search.ts"
+    "eval:search": "tsx --env-file=.env.local scripts/eval-search.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
@@ -31,6 +32,7 @@
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
     "tsx": "^4.22.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.6"
   }
 }
