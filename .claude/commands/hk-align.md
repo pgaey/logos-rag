@@ -69,3 +69,13 @@ bash .harness-kit/bin/sdd status
 > **"어떤 컨텍스트로 진행할까요?"**
 
 여러 옵션이 있다면 짧게 제시할 수 있으나, 사용자의 명시적 선택 전에 어떤 행동도 취하지 마세요.
+
+## 6. Phase 신규 생성 시 아키텍처 청사진 안내
+
+Alignment Phase에서 SDD-P (Mode A) 가 확정되고 `sdd phase new <slug>` 실행 직후,
+다음 안내를 사용자에게 한 줄로 제시합니다:
+
+> **"`/hk-phase-arch {N}`을 실행하면 Phase 아키텍처 청사진(`docs/phase-{N}-arch.html`)을 생성합니다. 구현 전 설계를 시각화하여 방향을 검증할 수 있습니다."**
+
+- 강제 실행 금지 — 사용자가 원할 때만 호출
+- spec-x(SDD-x) 또는 FF 모드에는 안내하지 않음 (Phase 소속 작업이 아닌 경우)

@@ -66,8 +66,8 @@ Phase 생성 시점에 호출하는 아키텍처 청사진 생성 커맨드. "�
 - [ ] Commit: `feat(spec-x-phase-doc-html): add hk-phase-arch skill`
 
 ### 4-2. `hk-align.md` 통합
-- [ ] `.claude/commands/hk-align.md` Phase 생성 후 `/hk-phase-arch` 호출 안내 추가
-- [ ] Commit: `feat(spec-x-phase-doc-html): integrate hk-phase-arch into hk-align`
+- [x] `.claude/commands/hk-align.md` Phase 생성 후 `/hk-phase-arch` 호출 안내 추가
+- [x] Commit: `feat(spec-x-phase-doc-html): integrate hk-phase-arch into hk-align`
 
 ---
 
