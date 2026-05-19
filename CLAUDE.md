@@ -1,8 +1,3 @@
-<!-- HARNESS-KIT:BEGIN -->
-
-@.harness-kit/CLAUDE.fragment.md
-
-<!-- HARNESS-KIT:END -->
 
 @AGENTS.md
 
@@ -31,3 +26,7 @@
 | Linux 서버 / Windows / 헤드리스 환경 | tmux     |
 
 > 헷갈리면 항상 cmux 로 가정하고, tmux 명령으로 답하기 전에 사용자에게 한 번 더 확인할 것.
+
+<!-- HARNESS-KIT:BEGIN -->
+@.harness-kit/CLAUDE.fragment.md
+<!-- HARNESS-KIT:END -->
