@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>logos-rag · 시스템 아키텍처 인수인계</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', sans-serif;
+    background: #fafbfc; color: #1f2328; line-height: 1.7;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px 80px; }
+
+  header {
+    background: linear-gradient(135deg, #6f42c1 0%, #8957e5 50%, #218bff 100%);
+    margin: 0 -24px 32px; padding: 56px 32px;
+    color: white;
+  }
+  header .scope {
+    display: inline-block; padding: 4px 12px; border-radius: 12px;
+    background: rgba(255,255,255,0.2); font-size: 12px; font-weight: 600;
+    letter-spacing: 0.5px; margin-bottom: 14px;
+  }
+  header h1 { margin: 0 0 10px; font-size: 34px; line-height: 1.2; }
+  header .subtitle { margin: 0; font-size: 16px; opacity: 0.92; max-width: 720px; }
+  header .docs-line {
+    margin-top: 20px; font-size: 13px; opacity: 0.85;
+    padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.2);
+  }
+  header .docs-line code { background: rgba(255,255,255,0.15); padding: 2px 6px; border-radius: 4px; }
+
+  /* TOC */
+  .toc {
+    background: white; border: 1px solid #d0d7de; border-radius: 8px;
+    padding: 18px 24px; margin-bottom: 32px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .toc h3 { margin: 0 0 10px; font-size: 12px; color: #57606a; text-transform: uppercase; letter-spacing: 0.8px; }
+  .toc ol { margin: 0; padding-left: 20px; columns: 2; column-gap: 32px; }
+  .toc li { margin: 3px 0; break-inside: avoid; }
+  .toc a { color: #0969da; text-decoration: none; font-size: 14px; }
+  .toc a:hover { text-decoration: underline; }
+  @media (max-width: 700px) { .toc ol { columns: 1; } }
+
+  section {
+    background: white; border: 1px solid #d0d7de; border-radius: 8px;
+    padding: 28px 32px; margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  section h2 {
+    margin: 0 0 6px; font-size: 24px; color: #1f2328;
+    display: flex; align-items: center; gap: 14px;
+  }
+  section h2 .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, #6f42c1, #218bff);
+    color: white; font-size: 15px; font-weight: 700;
+  }
+  section .lead {
+    margin: 6px 0 24px; padding-bottom: 16px;
+    border-bottom: 1px solid #eaeef2;
+    color: #57606a; font-size: 14px;
+  }
+  section h3 { margin: 24px 0 10px; font-size: 17px; color: #1f2328; }
+
+  code {
+    background: #eff1f3; padding: 2px 7px; border-radius: 4px;
+    font-family: 'SF Mono', Menlo, monospace; font-size: 13px; color: #0a3069;
+  }
+  pre {
+    background: #f6f8fa; border: 1px solid #d0d7de; border-radius: 6px;
+    padding: 14px 16px; overflow-x: auto;
+    font-family: 'SF Mono', Menlo, monospace; font-size: 13px; line-height: 1.5;
+  }
+
+  table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 14px; }
+  th, td { padding: 11px 14px; text-align: left; border-bottom: 1px solid #eaeef2; }
+  th { background: #f6f8fa; font-weight: 600; }
+  tr:hover td { background: #fafbfc; }
+
+  .diagram {
+    margin: 20px 0; padding: 24px 20px;
+    background: linear-gradient(180deg, #f6f8fa 0%, #fafbfc 100%);
+    border: 1px solid #eaeef2; border-radius: 10px;
+    overflow-x: auto;
+  }
+  .diagram svg { display: block; margin: 0 auto; }
+  .caption {
+    text-align: center; font-size: 12px; color: #57606a;
+    margin-top: 12px; padding-top: 12px;
+    border-top: 1px dashed #d0d7de;
+  }
+
+  .step {
+    margin: 16px 0; padding: 18px 22px;
+    background: #f6f8fa; border-radius: 8px;
+    border-left: 4px solid #218bff;
+  }
+  .step h4 { margin: 0 0 6px; font-size: 15px; color: #1f2328; }
+  .step .actor {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    background: #ddf4ff; color: #0a3069; font-size: 11px; font-weight: 600;
+    margin-right: 8px;
+  }
+  .step .actor.user { background: #fff8c5; color: #7d4e00; }
+  .step .actor.system { background: #ddf4ff; color: #0a3069; }
+  .step .actor.external { background: #ffebe9; color: #82071e; }
+  .step p { margin: 6px 0; font-size: 14px; }
+  .step pre { margin: 8px 0 4px; font-size: 12px; }
+
+  .phase-status {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px; margin: 18px 0;
+  }
+  .phase-card {
+    padding: 16px 18px; border-radius: 8px;
+    background: #f6f8fa; border: 1px solid #d0d7de;
+    position: relative;
+  }
+  .phase-card.done {
+    background: linear-gradient(135deg, #dafbe1, #f0fff4);
+    border-color: #2da44e;
+  }
+  .phase-card.planned {
+    background: linear-gradient(135deg, #fff8c5, #fffce0);
+    border-color: #d4a72c;
+  }
+  .phase-card .pid { font-size: 12px; color: #57606a; font-family: 'SF Mono', Menlo, monospace; }
+  .phase-card h4 { margin: 4px 0 8px; font-size: 16px; }
+  .phase-card .what { font-size: 13px; color: #1f2328; }
+  .phase-card .status {
+    display: inline-block; margin-top: 8px; padding: 2px 8px; border-radius: 10px;
+    font-size: 11px; font-weight: 600;
+  }
+  .phase-card.done .status { background: #1f6f2e; color: #aff5b4; }
+  .phase-card.planned .status { background: #7d4e00; color: #ffdf5d; }
+
+  .note, .warn, .tip {
+    margin: 16px 0; padding: 14px 18px; border-radius: 6px;
+    border-left: 4px solid; font-size: 14px;
+  }
+  .note { background: #ddf4ff; border-color: #0969da; }
+  .warn { background: #fff8c5; border-color: #d4a72c; }
+  .tip  { background: #dafbe1; border-color: #2da44e; }
+  .note strong, .warn strong, .tip strong { display: block; margin-bottom: 4px; }
+
+  footer {
+    text-align: center; color: #57606a; font-size: 12px;
+    padding-top: 28px; border-top: 1px solid #eaeef2; margin-top: 48px;
+  }
+  footer a { color: #0969da; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <span class="scope">SYSTEM ARCHITECTURE · 신입 개발자 인수인계</span>
+  <h1>logos-rag · 전체 시스템 아키텍처</h1>
+  <p class="subtitle">한국어 질문으로 영문 성경의 의미 유사 구절을 검색하고 Gemini Flash 로 한국어 답변을 만드는 풀스택 RAG. 유저가 클릭하는 순간부터 답변이 화면에 뜨기까지 무엇이 어떻게 흐르는지.</p>
+  <p class="docs-line">관련 문서: <code>docs/phase-01-overview.html</code> (phase-01 요약) · <code>docs/phase-01-handover.html</code> (phase-01 인계) · <strong>이 문서는 v1 전체 시스템 + 유저 플로우</strong></p>
+</header>
+
+<div class="toc">
+  <h3>이 문서에서</h3>
+  <ol>
+    <li><a href="#big">한 장으로 보는 v1 전체</a></li>
+    <li><a href="#actors">등장인물 (시스템 구성요소)</a></li>
+    <li><a href="#user-flow">유저 플로우 — 클릭부터 답변까지</a></li>
+    <li><a href="#data-flow">데이터 흐름 — 한 query 의 여정</a></li>
+    <li><a href="#auth">인증·권한·일일 한도</a></li>
+    <li><a href="#phase-status">phase 별 현재 상태</a></li>
+    <li><a href="#deploy">배포·환경 분리</a></li>
+    <li><a href="#trust">신뢰 경계 (보안)</a></li>
+    <li><a href="#future">v1 이후 (v1.5 / v2 / v3)</a></li>
+    <li><a href="#start">신입 개발자 시작 가이드</a></li>
+  </ol>
+</div>
+
+<!-- ===================================== -->
+<!-- 1. Big picture -->
+<!-- ===================================== -->
+<section id="big">
+  <h2><span class="num">1</span>한 장으로 보는 v1 전체</h2>
+  <p class="lead">유저가 어디에 있고, 어디로 요청 가고, 어디서 데이터가 합쳐져서 답이 만들어지는가.</p>
+
+  <div class="diagram">
+    <svg width="1000" height="540" viewBox="0 0 1000 540" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="aB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="#218bff"/>
+        </marker>
+        <marker id="aG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="#2da44e"/>
+        </marker>
+        <marker id="aP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="#6f42c1"/>
+        </marker>
+      </defs>
+
+      <!-- User -->
+      <g>
+        <circle cx="80" cy="80" r="32" fill="#fff8c5" stroke="#7d4e00" stroke-width="2"/>
+        <text x="80" y="86" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="13" font-weight="600" fill="#7d4e00">유저</text>
+        <text x="80" y="130" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#57606a">한국어 질문</text>
+      </g>
+
+      <!-- Browser -->
+      <g>
+        <rect x="170" y="40" width="200" height="80" rx="8" fill="white" stroke="#1f2328" stroke-width="1.5"/>
+        <text x="270" y="62" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#57606a">브라우저 (사용자 기기)</text>
+        <text x="270" y="80" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="13" fill="#1f2328" font-weight="600">Next.js Client</text>
+        <text x="270" y="100" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#8c959f">React · TanStack Query</text>
+      </g>
+      <path d="M 112 80 L 170 80" stroke="#218bff" stroke-width="1.5" marker-end="url(#aB)"/>
+
+      <!-- Edge/Vercel -->
+      <g>
+        <rect x="420" y="20" width="220" height="120" rx="8" fill="white" stroke="#1f2328" stroke-width="1.5"/>
+        <text x="530" y="42" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#57606a">Vercel Edge (서버리스)</text>
+        <text x="530" y="62" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="13" fill="#1f2328" font-weight="600">Next.js Server</text>
+        <line x1="435" y1="74" x2="625" y2="74" stroke="#eaeef2"/>
+        <text x="530" y="92" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#0a3069">/api/ask · server actions</text>
+        <text x="530" y="108" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#0a3069">searchVerses() · 프롬프트 조립</text>
+        <text x="530" y="124" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#0a3069">SUPABASE_SECRET_KEY 사용</text>
+      </g>
+      <path d="M 370 80 L 420 80" stroke="#218bff" stroke-width="1.5" marker-end="url(#aB)"/>
+      <text x="395" y="74" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" fill="#218bff">HTTPS</text>
+
+      <!-- Supabase -->
+      <g>
+        <rect x="690" y="20" width="260" height="180" rx="8" fill="white" stroke="#3ecf8e" stroke-width="1.5"/>
+        <text x="820" y="42" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#57606a">Supabase Cloud</text>
+        <text x="820" y="62" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="13" fill="#1f2328" font-weight="600">Postgres + pgvector + Auth</text>
+        <line x1="705" y1="74" x2="935" y2="74" stroke="#eaeef2"/>
+        <text x="820" y="94" text-anchor="middle" font-family="SF Mono, monospace" font-size="11" fill="#1f2328">verses (text + vector(768))</text>
+        <text x="820" y="112" text-anchor="middle" font-family="SF Mono, monospace" font-size="11" fill="#1f2328">match_verses(query, k) RPC</text>
+        <text x="820" y="130" text-anchor="middle" font-family="SF Mono, monospace" font-size="11" fill="#1f2328">auth.users (Supabase Auth)</text>
+        <text x="820" y="148" text-anchor="middle" font-family="SF Mono, monospace" font-size="11" fill="#1f2328">user_quota (phase-04 예정)</text>
+        <line x1="705" y1="160" x2="935" y2="160" stroke="#eaeef2"/>
+        <text x="820" y="180" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#8c959f">RLS · 정책 0 (서버 전용)</text>
+      </g>
+      <path d="M 640 80 L 690 80" stroke="#2da44e" stroke-width="1.5" marker-end="url(#aG)"/>
+      <text x="665" y="74" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" fill="#2da44e">Supabase JS</text>
+
+      <!-- Gemini -->
+      <g>
+        <rect x="170" y="220" width="200" height="100" rx="8" fill="white" stroke="#6f42c1" stroke-width="1.5"/>
+        <text x="270" y="242" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#57606a">Google AI Studio</text>
+        <text x="270" y="262" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="13" fill="#1f2328" font-weight="600">Gemini API</text>
+        <line x1="185" y1="274" x2="355" y2="274" stroke="#eaeef2"/>
+        <text x="270" y="292" text-anchor="middle" font-family="SF Mono, monospace" font-size="11" fill="#1f2328">embedContent (768d)</text>
+        <text x="270" y="310" text-anchor="middle" font-family="SF Mono, monospace" font-size="11" fill="#1f2328">gemini-flash (답변 생성)</text>
+      </g>
+      <path d="M 480 140 L 320 220" stroke="#6f42c1" stroke-width="1.5" marker-end="url(#aP)"/>
+      <text x="385" y="180" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" fill="#6f42c1">HTTPS</text>
+
+      <!-- Developer / scripts box (separate world) -->
+      <g>
+        <rect x="40" y="380" width="920" height="140" rx="8" fill="#f6f8fa" stroke="#d0d7de" stroke-width="1" stroke-dasharray="4 4"/>
+        <text x="56" y="400" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#57606a">━━ 개발자 노트북 (앱 런타임과 별개 세계) ━━</text>
+        <text x="56" y="420" font-family="-apple-system, sans-serif" font-size="12" fill="#1f2328">셋업·마이그레이션·배치 적재용 — 유저 트래픽 안 받음</text>
+
+        <!-- script boxes -->
+        <rect x="60" y="440" width="170" height="64" rx="6" fill="white" stroke="#1f2328"/>
+        <text x="145" y="460" text-anchor="middle" font-family="SF Mono, monospace" font-size="11" fill="#1f2328">pnpm check:supabase</text>
+        <text x="145" y="478" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" fill="#8c959f">pg 직접 (6단계)</text>
+        <text x="145" y="494" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" fill="#8c959f">연결 + 스키마 검증</text>
+
+        <rect x="240" y="440" width="170" height="64" rx="6" fill="white" stroke="#1f2328"/>
+        <text x="325" y="460" text-anchor="middle" font-family="SF Mono, monospace" font-size="11" fill="#1f2328">pnpm fetch:bible</text>
+        <text x="325" y="478" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" fill="#8c959f">gratis-bible HTTP fetch</text>
+        <text x="325" y="494" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" fill="#8c959f">→ data/web-bible.json</text>
+
+        <rect x="420" y="440" width="170" height="64" rx="6" fill="white" stroke="#1f2328"/>
+        <text x="505" y="460" text-anchor="middle" font-family="SF Mono, monospace" font-size="11" fill="#1f2328">supabase db push</text>
+        <text x="505" y="478" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" fill="#8c959f">CLI 마이그레이션</text>
+        <text x="505" y="494" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" fill="#8c959f">DDL 적용</text>
+
+        <rect x="600" y="440" width="170" height="64" rx="6" fill="white" stroke="#1f2328"/>
+        <text x="685" y="460" text-anchor="middle" font-family="SF Mono, monospace" font-size="11" fill="#1f2328">pnpm embed:bible</text>
+        <text x="685" y="478" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" fill="#8c959f">pg + Gemini 임베딩</text>
+        <text x="685" y="494" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" fill="#8c959f">2-pass 적재</text>
+
+        <rect x="780" y="440" width="170" height="64" rx="6" fill="white" stroke="#1f2328"/>
+        <text x="865" y="460" text-anchor="middle" font-family="SF Mono, monospace" font-size="11" fill="#1f2328">pnpm eval:search</text>
+        <text x="865" y="478" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" fill="#8c959f">검색 정확도 측정</text>
+        <text x="865" y="494" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" fill="#8c959f">→ docs/eval/...md</text>
+      </g>
+
+      <!-- legend / labels -->
+      <text x="20" y="360" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#57606a">━━ 앱 런타임 (유저 트래픽) ━━</text>
+    </svg>
+    <p class="caption">위쪽 = 유저 트래픽이 흐르는 앱 런타임. 아래쪽 = 개발자 노트북에서만 동작하는 스크립트들 (앱과 같은 DB 를 쓰지만 통로가 다름).</p>
+  </div>
+
+  <div class="tip">
+    <strong>핵심 분리</strong>
+    유저 트래픽 (브라우저 → Vercel → Supabase + Gemini) 과 개발자 작업 (노트북의 5개 스크립트) 가 같은 코드베이스 안에 있지만 <strong>실행 위치도 통로도 완전 분리</strong>. 이게 logos-rag 의 가장 큰 멘탈 모델 분리점.
+  </div>
+</section>
+
+<!-- ===================================== -->
+<!-- 2. Actors -->
+<!-- ===================================== -->
+<section id="actors">
+  <h2><span class="num">2</span>등장인물 (시스템 구성요소)</h2>
+  <p class="lead">8개의 등장인물. 각자 무슨 역할이고 어디서 사는지.</p>
+
+  <table>
+    <thead>
+      <tr><th>구성요소</th><th>어디서 사나</th><th>책임</th><th>비고</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>유저</strong></td>
+        <td>본인 브라우저</td>
+        <td>한국어 질문 입력, 답변 읽기, 로그인</td>
+        <td>로그인 안 한 게스트는 차단 (phase-03 이후)</td>
+      </tr>
+      <tr>
+        <td><strong>Next.js Client</strong></td>
+        <td>유저 브라우저 (JS 다운로드 후)</td>
+        <td>UI 렌더링, 폼 입력 받기, TanStack Query 로 서버 호출</td>
+        <td>Supabase publishable key 만 사용 (RLS 보호)</td>
+      </tr>
+      <tr>
+        <td><strong>Next.js Server</strong></td>
+        <td>Vercel Edge (서버리스)</td>
+        <td>API route, Server Action, 검색 + LLM 호출, 프롬프트 조립</td>
+        <td>secret key 보관. 유저 별 quota 체크</td>
+      </tr>
+      <tr>
+        <td><strong>Supabase Postgres</strong></td>
+        <td>Supabase Cloud (Seoul)</td>
+        <td>verses · auth.users · user_quota 저장. match_verses RPC 실행</td>
+        <td>pgvector extension 으로 벡터 검색</td>
+      </tr>
+      <tr>
+        <td><strong>Supabase Auth</strong></td>
+        <td>Supabase Cloud</td>
+        <td>회원가입 · 로그인 · 세션 토큰 관리</td>
+        <td>이메일/소셜 (phase-03 결정)</td>
+      </tr>
+      <tr>
+        <td><strong>Gemini Embedding API</strong></td>
+        <td>Google Cloud</td>
+        <td>유저 query 를 768d 벡터로 변환</td>
+        <td>무료 tier RPD 1,000 (1일)</td>
+      </tr>
+      <tr>
+        <td><strong>Gemini Flash API</strong></td>
+        <td>Google Cloud</td>
+        <td>프롬프트 (질문 + top-K verse) → 한국어 답변 생성</td>
+        <td>무료 tier RPM·RPD 충분 (phase-03)</td>
+      </tr>
+      <tr>
+        <td><strong>개발자 (너)</strong></td>
+        <td>본인 노트북</td>
+        <td>5개 스크립트로 셋업·마이그레이션·배치 적재·평가</td>
+        <td>유저 트래픽과 분리. SUPABASE_DB_URL 사용 (pg 직접)</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ===================================== -->
+<!-- 3. User Flow -->
+<!-- ===================================== -->
+<section id="user-flow">
+  <h2><span class="num">3</span>유저 플로우 — 클릭부터 답변까지</h2>
+  <p class="lead">유저가 처음 사이트 방문해서 답변을 받기까지 무엇이 일어나는지. v1 완성 시 기준.</p>
+
+  <div class="diagram">
+    <svg width="1000" height="640" viewBox="0 0 1000 640" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="aS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="#218bff"/>
+        </marker>
+      </defs>
+
+      <!-- swimlane headers -->
+      <rect x="0" y="0" width="200" height="40" fill="#fff8c5"/>
+      <text x="100" y="26" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="12" font-weight="700" fill="#7d4e00">유저</text>
+
+      <rect x="200" y="0" width="220" height="40" fill="#ddf4ff"/>
+      <text x="310" y="26" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="12" font-weight="700" fill="#0a3069">브라우저 (Client)</text>
+
+      <rect x="420" y="0" width="220" height="40" fill="#dafbe1"/>
+      <text x="530" y="26" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="12" font-weight="700" fill="#116329">Vercel (Server)</text>
+
+      <rect x="640" y="0" width="180" height="40" fill="#fbefff"/>
+      <text x="730" y="26" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="12" font-weight="700" fill="#6639ba">Supabase</text>
+
+      <rect x="820" y="0" width="180" height="40" fill="#ffebe9"/>
+      <text x="910" y="26" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="12" font-weight="700" fill="#82071e">Gemini</text>
+
+      <!-- swimlane vertical dividers -->
+      <line x1="200" y1="40" x2="200" y2="640" stroke="#d0d7de" stroke-dasharray="3 3"/>
+      <line x1="420" y1="40" x2="420" y2="640" stroke="#d0d7de" stroke-dasharray="3 3"/>
+      <line x1="640" y1="40" x2="640" y2="640" stroke="#d0d7de" stroke-dasharray="3 3"/>
+      <line x1="820" y1="40" x2="820" y2="640" stroke="#d0d7de" stroke-dasharray="3 3"/>
+
+      <!-- Step 1 -->
+      <g>
+        <circle cx="100" cy="80" r="14" fill="#7d4e00"/>
+        <text x="100" y="85" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="12" font-weight="700" fill="white">1</text>
+        <text x="100" y="115" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#1f2328">사이트 방문</text>
+        <text x="100" y="130" text-anchor="middle" font-family="SF Mono, monospace" font-size="10" fill="#8c959f">logos-rag.vercel.app</text>
+      </g>
+      <path d="M 114 80 L 200 80" stroke="#218bff" stroke-width="1.5" marker-end="url(#aS)"/>
+
+      <!-- Step 2 -->
+      <g>
+        <rect x="220" y="60" width="180" height="50" rx="6" fill="white" stroke="#0a3069"/>
+        <text x="310" y="78" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#1f2328" font-weight="600">2. Next.js 페이지 로드</text>
+        <text x="310" y="96" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" fill="#8c959f">로그인 폼 또는 질문 폼</text>
+      </g>
+
+      <!-- Step 3: login -->
+      <g>
+        <circle cx="100" cy="170" r="14" fill="#7d4e00"/>
+        <text x="100" y="175" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="12" font-weight="700" fill="white">3</text>
+        <text x="100" y="200" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#1f2328">로그인</text>
+        <text x="100" y="215" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" fill="#8c959f">(가입 또는 기존)</text>
+      </g>
+      <path d="M 114 170 L 200 170" stroke="#218bff" stroke-width="1.5" marker-end="url(#aS)"/>
+
+      <g>
+        <rect x="220" y="150" width="180" height="50" rx="6" fill="white" stroke="#0a3069"/>
+        <text x="310" y="170" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#1f2328" font-weight="600">Supabase JS 로 로그인</text>
+        <text x="310" y="186" text-anchor="middle" font-family="SF Mono, monospace" font-size="10" fill="#8c959f">signInWithPassword</text>
+      </g>
+      <path d="M 400 170 L 640 170" stroke="#218bff" stroke-width="1.5" marker-end="url(#aS)"/>
+
+      <g>
+        <rect x="660" y="150" width="140" height="50" rx="6" fill="white" stroke="#6639ba"/>
+        <text x="730" y="170" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#1f2328" font-weight="600">Auth 검증</text>
+        <text x="730" y="186" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" fill="#8c959f">JWT 발급</text>
+      </g>
+
+      <!-- Step 4: question -->
+      <g>
+        <circle cx="100" cy="260" r="14" fill="#7d4e00"/>
+        <text x="100" y="265" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="12" font-weight="700" fill="white">4</text>
+        <text x="100" y="290" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#1f2328">한국어 질문 입력</text>
+        <text x="100" y="305" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" fill="#8c959f">"하나님이 세상을 만든 이야기"</text>
+      </g>
+      <path d="M 114 260 L 200 260" stroke="#218bff" stroke-width="1.5" marker-end="url(#aS)"/>
+
+      <g>
+        <rect x="220" y="240" width="180" height="50" rx="6" fill="white" stroke="#0a3069"/>
+        <text x="310" y="260" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#1f2328" font-weight="600">/api/ask POST</text>
+        <text x="310" y="276" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" fill="#8c959f">TanStack mutation</text>
+      </g>
+      <path d="M 400 260 L 420 260" stroke="#218bff" stroke-width="1.5" marker-end="url(#aS)"/>
+
+      <!-- Step 5: server -->
+      <g>
+        <rect x="440" y="232" width="180" height="68" rx="6" fill="white" stroke="#116329"/>
+        <text x="530" y="250" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#1f2328" font-weight="600">5. quota 체크</text>
+        <text x="530" y="266" text-anchor="middle" font-family="SF Mono, monospace" font-size="10" fill="#1f2328">user_quota 조회 + 증가</text>
+        <text x="530" y="282" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" fill="#8c959f">초과면 429 반환</text>
+        <text x="530" y="296" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" fill="#8c959f">(phase-04)</text>
+      </g>
+      <path d="M 620 266 L 640 266" stroke="#218bff" stroke-width="1.5" marker-end="url(#aS)"/>
+      <g>
+        <rect x="660" y="240" width="140" height="50" rx="6" fill="white" stroke="#6639ba"/>
+        <text x="730" y="260" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#1f2328" font-weight="600">user_quota</text>
+        <text x="730" y="276" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" fill="#8c959f">today_count++</text>
+      </g>
+
+      <!-- Step 6: embed query -->
+      <g>
+        <rect x="440" y="320" width="180" height="50" rx="6" fill="white" stroke="#116329"/>
+        <text x="530" y="338" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#1f2328" font-weight="600">6. query 임베딩</text>
+        <text x="530" y="354" text-anchor="middle" font-family="SF Mono, monospace" font-size="10" fill="#1f2328">searchVerses() 내부</text>
+      </g>
+      <path d="M 620 345 L 820 345" stroke="#218bff" stroke-width="1.5" marker-end="url(#aS)"/>
+      <g>
+        <rect x="840" y="320" width="140" height="50" rx="6" fill="white" stroke="#82071e"/>
+        <text x="910" y="340" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#1f2328" font-weight="600">embedContent</text>
+        <text x="910" y="356" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" fill="#8c959f">→ 768d vector</text>
+      </g>
+
+      <!-- Step 7: cosine search -->
+      <g>
+        <rect x="440" y="390" width="180" height="50" rx="6" fill="white" stroke="#116329"/>
+        <text x="530" y="408" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#1f2328" font-weight="600">7. 검색 RPC 호출</text>
+        <text x="530" y="424" text-anchor="middle" font-family="SF Mono, monospace" font-size="10" fill="#1f2328">.rpc('match_verses', ...)</text>
+      </g>
+      <path d="M 620 415 L 640 415" stroke="#218bff" stroke-width="1.5" marker-end="url(#aS)"/>
+      <g>
+        <rect x="660" y="390" width="140" height="50" rx="6" fill="white" stroke="#6639ba"/>
+        <text x="730" y="408" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#1f2328" font-weight="600">cosine top-K</text>
+        <text x="730" y="424" text-anchor="middle" font-family="SF Mono, monospace" font-size="10" fill="#8c959f">verses ORDER BY ⟨=⟩</text>
+      </g>
+
+      <!-- Step 8: prompt + LLM -->
+      <g>
+        <rect x="440" y="460" width="180" height="50" rx="6" fill="white" stroke="#116329"/>
+        <text x="530" y="478" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#1f2328" font-weight="600">8. 프롬프트 조립 + Flash</text>
+        <text x="530" y="494" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" fill="#8c959f">"이 verse 보고 한국어로 답"</text>
+      </g>
+      <path d="M 620 485 L 820 485" stroke="#218bff" stroke-width="1.5" marker-end="url(#aS)"/>
+      <g>
+        <rect x="840" y="460" width="140" height="50" rx="6" fill="white" stroke="#82071e"/>
+        <text x="910" y="478" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#1f2328" font-weight="600">gemini-flash</text>
+        <text x="910" y="494" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" fill="#8c959f">→ 한국어 답변 text</text>
+      </g>
+
+      <!-- Step 9: response -->
+      <g>
+        <rect x="440" y="530" width="180" height="50" rx="6" fill="white" stroke="#116329"/>
+        <text x="530" y="548" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#1f2328" font-weight="600">9. JSON 응답</text>
+        <text x="530" y="564" text-anchor="middle" font-family="SF Mono, monospace" font-size="10" fill="#8c959f">{ answer, verses[] }</text>
+      </g>
+      <path d="M 440 555 L 400 555" stroke="#218bff" stroke-width="1.5" marker-end="url(#aS)"/>
+      <g>
+        <rect x="220" y="530" width="180" height="50" rx="6" fill="white" stroke="#0a3069"/>
+        <text x="310" y="550" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#1f2328" font-weight="600">10. 답변 렌더링</text>
+        <text x="310" y="566" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" fill="#8c959f">한국어 답 + 영문 근거 verse</text>
+      </g>
+      <path d="M 220 555 L 114 555" stroke="#218bff" stroke-width="1.5" marker-end="url(#aS)"/>
+
+      <g>
+        <circle cx="100" cy="555" r="14" fill="#7d4e00"/>
+        <text x="100" y="560" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="12" font-weight="700" fill="white">11</text>
+        <text x="100" y="585" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#1f2328">답변 읽기 ✓</text>
+        <text x="100" y="600" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" fill="#8c959f">근거 verse 확인</text>
+      </g>
+
+    </svg>
+    <p class="caption">v1 완성 시 한 query 의 전체 여정 (5 swim lane · 11 단계). 4가지 외부 서비스 (Vercel · Supabase · Gemini × 2) 가 협력.</p>
+  </div>
+
+  <div class="warn">
+    <strong>주의 — 현재 동작 가능한 부분</strong>
+    위 다이어그램은 v1 완성 후 시점. phase-01 종료 시점 (지금) 은 <strong>6·7번 (검색) 까지만</strong> 동작. 8번 (LLM) 은 phase-03, 5번 (quota) 은 phase-04 에서 구현 예정. 1~4·9·10·11 (UI/Auth) 도 phase-03.
+  </div>
+</section>
+
+<!-- ===================================== -->
+<!-- 4. Data flow -->
+<!-- ===================================== -->
+<section id="data-flow">
+  <h2><span class="num">4</span>데이터 흐름 — 한 query 의 여정</h2>
+  <p class="lead">유저가 입력한 한국어 한 문장이 답변이 되기까지 어떤 형태로 변하는지.</p>
+
+  <div class="step">
+    <h4>Step 1 — <span class="actor user">USER</span> 한국어 문장 입력</h4>
+    <pre>입력 = "하나님이 세상을 만든 이야기 알려줘"</pre>
+    <p>그냥 한국어 텍스트. 영문 성경 DB 와는 아직 어떤 연관도 없음.</p>
+  </div>
+
+  <div class="step">
+    <h4>Step 2 — <span class="actor external">GEMINI</span> 임베딩 (의미 → 좌표)</h4>
+    <pre>POST gemini.../embedContent
+{
+  "model": "gemini-embedding-001",
+  "contents": ["하나님이 세상을 만든 이야기 알려줘"],
+  "config": { "outputDimensionality": 768 }
+}
+
+응답 = [0.012, -0.034, 0.51, ..., 0.087]  ← 768개 float</pre>
+    <p>이 벡터는 의미를 압축한 좌표. 비슷한 의미의 영문도 비슷한 좌표를 가짐. 그래서 한국어 → 영문 검색이 가능.</p>
+  </div>
+
+  <div class="step">
+    <h4>Step 3 — <span class="actor system">VERCEL</span> Supabase RPC 호출</h4>
+    <pre>supabase.rpc('match_verses', {
+  query_embedding: '[0.012,-0.034,...,0.087]',
+  match_count: 5
+})</pre>
+    <p>HTTP → PostgREST → Postgres 의 <code>match_verses</code> 함수로 전달.</p>
+  </div>
+
+  <div class="step">
+    <h4>Step 4 — <span class="actor system">POSTGRES</span> cosine 거리 계산</h4>
+    <pre>SELECT id, book, chapter, verse, text,
+       1 - (embedding &lt;=&gt; $1) AS similarity
+FROM verses
+WHERE embedding IS NOT NULL
+ORDER BY embedding &lt;=&gt; $1
+LIMIT 5;</pre>
+    <p>verses 의 모든 row 의 embedding 컬럼과 query 벡터 사이 cosine distance 계산. 가까운 5개 반환.</p>
+  </div>
+
+  <div class="step">
+    <h4>Step 5 — <span class="actor system">VERCEL</span> 프롬프트 조립</h4>
+    <pre>다음 영문 성경 구절들을 보고 한국어로 답하라:
+
+[Genesis 1:1] In the beginning God created the heavens and the earth.
+[Genesis 1:2] Now the earth was formless and empty...
+[Genesis 2:1] Thus the heavens and the earth were finished...
+...
+
+질문: "하나님이 세상을 만든 이야기 알려줘"</pre>
+    <p>검색된 verse 들을 LLM 에게 컨텍스트로 제공. "이 verse 만 보고 답해" 로 환각 방지.</p>
+  </div>
+
+  <div class="step">
+    <h4>Step 6 — <span class="actor external">GEMINI FLASH</span> 답변 생성</h4>
+    <pre>응답 = "성경의 첫 권 창세기는 하나님이 천지를 창조하신 것으로 시작합니다.
+       Genesis 1:1 은 '태초에 하나님이 천지를 창조하시니라'..."</pre>
+    <p>Flash 가 컨텍스트 + 질문 → 한국어 답변. 답변 안에 영문 근거 verse 인용도 포함.</p>
+  </div>
+
+  <div class="step">
+    <h4>Step 7 — <span class="actor system">CLIENT</span> 화면 렌더링</h4>
+    <p>한국어 답변 + 영문 근거 verse 카드 (Genesis 1:1, Genesis 1:2, ...) 를 UI 에 표시. 유저가 verse 카드 클릭하면 원문 표시.</p>
+  </div>
+</section>
+
+<!-- ===================================== -->
+<!-- 5. Auth + Quota -->
+<!-- ===================================== -->
+<section id="auth">
+  <h2><span class="num">5</span>인증·권한·일일 한도</h2>
+  <p class="lead">누구나 무제한으로 쓰면 비용 폭발. 그래서 로그인 + 일일 20회 제한.</p>
+
+  <h3>인증 (phase-03)</h3>
+  <ul>
+    <li><strong>Supabase Auth</strong> — 이메일/비밀번호 또는 소셜 (구체적 방식은 phase-03 진입 시 결정)</li>
+    <li>로그인 성공 시 Supabase 가 <strong>JWT 발급</strong> → 브라우저 쿠키에 저장</li>
+    <li>각 API 호출은 이 JWT 를 헤더로 전달. Server 가 <code>auth.users.id</code> 추출</li>
+    <li>로그인 안 한 상태 = <code>/api/ask</code> 거부</li>
+  </ul>
+
+  <h3>일일 한도 (phase-04)</h3>
+  <pre>-- 미래 스키마
+CREATE TABLE user_quota (
+  user_id    uuid PRIMARY KEY REFERENCES auth.users(id),
+  date       date NOT NULL,
+  count      int  NOT NULL DEFAULT 0,
+  UNIQUE (user_id, date)
+);
+
+ALTER TABLE user_quota ENABLE ROW LEVEL SECURITY;
+-- 정책: 본인 row 만 SELECT 가능 (사용자가 본인 잔여 확인 UI)</pre>
+
+  <p>Server 가 <code>/api/ask</code> 호출 시:</p>
+  <ol>
+    <li>JWT 에서 user_id 추출</li>
+    <li><code>user_quota</code> 에서 (user_id, today) row 조회</li>
+    <li>count ≥ 20 이면 HTTP 429 반환</li>
+    <li>아니면 count++ 후 검색·LLM 진행</li>
+  </ol>
+
+  <div class="note">
+    <strong>왜 20?</strong>
+    포트폴리오·데모 용도로 적당한 숫자. Gemini Flash 무료 tier RPM·RPD 안에서 여유. 운영하면서 조정 가능 (config 한 줄 변경).
+  </div>
+
+  <h3>보조 가드 (phase-04)</h3>
+  <ul>
+    <li><strong>프롬프트 인젝션 차단</strong> — 입력 길이 제한 + 위험 패턴 (시스템 프롬프트 우회 시도) 필터링</li>
+    <li><strong>면책 표기</strong> — "이 답변은 AI 생성이며 신학적 권위를 갖지 않습니다" UI 하단 명시</li>
+    <li><strong>IP 기반 보조 제한</strong> (선택) — 멀티 계정 우회 방지</li>
+  </ul>
+</section>
+
+<!-- ===================================== -->
+<!-- 6. Phase 상태 -->
+<!-- ===================================== -->
+<section id="phase-status">
+  <h2><span class="num">6</span>phase 별 현재 상태</h2>
+  <p class="lead">v1 완성까지의 4 phase. 각자 어디까지 갔는지.</p>
+
+  <div class="phase-status">
+    <div class="phase-card done">
+      <div class="pid">phase-01</div>
+      <h4>data-pipeline</h4>
+      <div class="what">verses 테이블 + 임베딩 + cosine 검색 + 평가</div>
+      <span class="status">완료</span>
+    </div>
+    <div class="phase-card planned">
+      <div class="pid">phase-02</div>
+      <h4>search-prompt</h4>
+      <div class="what">한국어 질문 → top-K → 프롬프트 조립 (LLM 호출 없이)</div>
+      <span class="status">계획</span>
+    </div>
+    <div class="phase-card planned">
+      <div class="pid">phase-03</div>
+      <h4>auth-ui-llm</h4>
+      <div class="what">Supabase Auth + Next UI + Gemini Flash 답변 통합</div>
+      <span class="status">계획</span>
+    </div>
+    <div class="phase-card planned">
+      <div class="pid">phase-04</div>
+      <h4>quota-deploy</h4>
+      <div class="what">일일 한도 + 인젝션 가드 + Vercel 배포</div>
+      <span class="status">계획</span>
+    </div>
+  </div>
+
+  <h3>phase-01 의 5 spec 상세</h3>
+  <table>
+    <thead><tr><th>spec</th><th>한 줄</th><th>PR</th></tr></thead>
+    <tbody>
+      <tr><td>spec-01-01</td><td>Supabase 부트스트랩 + 연결 검증</td><td>#1</td></tr>
+      <tr><td>spec-01-02</td><td>WEB 성경 fetch + JSON 정규화 (31,102 verse)</td><td>#2</td></tr>
+      <tr><td>spec-01-03</td><td>verses 테이블 + Supabase CLI 마이그레이션</td><td>#3</td></tr>
+      <tr><td>spec-01-04</td><td>2-pass 임베딩 적재 (현재 ~2,000 / 31,102)</td><td>#4</td></tr>
+      <tr><td>spec-01-05</td><td>match_verses RPC + 평가셋 (정량 100% PASS)</td><td>#5</td></tr>
+      <tr><td>phase-01 ship</td><td>develop 으로 머지</td><td>#6</td></tr>
+    </tbody>
+  </table>
+
+  <p>각 spec 의 자세한 결정·발견은 <code>specs/spec-01-*/walkthrough.md</code> 참조.</p>
+</section>
+
+<!-- ===================================== -->
+<!-- 7. Deploy -->
+<!-- ===================================== -->
+<section id="deploy">
+  <h2><span class="num">7</span>배포·환경 분리</h2>
+  <p class="lead">GitFlow 변형. 어떤 브랜치가 어디로 배포되는지.</p>
+
+  <table>
+    <thead><tr><th>브랜치</th><th>역할</th><th>배포 대상 (phase-04 이후)</th></tr></thead>
+    <tbody>
+      <tr><td><code>main</code></td><td>배포 가능 안정본</td><td>Vercel Production (실제 URL)</td></tr>
+      <tr><td><code>develop</code></td><td>통합 브랜치 (phase 단위 누적)</td><td>Vercel Preview</td></tr>
+      <tr><td><code>phase-N-{slug}</code></td><td>phase base — spec PR 누적</td><td>Vercel branch preview (선택)</td></tr>
+      <tr><td><code>spec-N-NN-{slug}</code></td><td>단일 PR — phase base 로 머지</td><td>Vercel branch preview (선택)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>실제 흐름</h3>
+  <pre>spec 작업 → spec branch → PR (base: phase-N) → review → 머지
+                                                    ↓
+                                phase 의 spec 표 자동 갱신 (sdd)
+                                                    ↓
+                          모든 spec Merged → /hk-phase-ship
+                                                    ↓
+                                    phase base → develop PR
+                                                    ↓
+                                          develop 머지 → Preview 배포
+                                                    ↓
+                                  (v1 완성 또는 마일스톤 시점)
+                                  develop → main PR → Production 배포</pre>
+
+  <div class="tip">
+    <strong>왜 phase base branch?</strong>
+    spec 마다 main 으로 직접 머지하면 develop 와 무관해짐. phase base 에 spec 들을 누적해서 <strong>phase 단위로 통합 테스트</strong> 후 develop 로 한 번에 머지. logos-rag 같은 학습 프로젝트에선 다소 무거울 수 있지만 GitFlow 패턴 경험 가치 있음.
+  </div>
+</section>
+
+<!-- ===================================== -->
+<!-- 8. Trust boundary -->
+<!-- ===================================== -->
+<section id="trust">
+  <h2><span class="num">8</span>신뢰 경계 — 보안 모델</h2>
+  <p class="lead">어떤 키가 어디서 살고, 누가 무엇에 접근 가능한지.</p>
+
+  <table>
+    <thead><tr><th>키 / 인증</th><th>어디에 저장</th><th>누가 사용</th><th>권한</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>sb_publishable_*</code></td>
+        <td>브라우저 (NEXT_PUBLIC_ env)</td>
+        <td>브라우저 JS</td>
+        <td>RLS 정책 따름 (verses 는 0 row)</td>
+      </tr>
+      <tr>
+        <td><code>sb_secret_*</code></td>
+        <td>Vercel env (서버만)</td>
+        <td>Next.js Server</td>
+        <td>RLS bypass (모든 row)</td>
+      </tr>
+      <tr>
+        <td>JWT (유저 세션)</td>
+        <td>브라우저 쿠키</td>
+        <td>유저 본인</td>
+        <td>auth.users 의 본인 row 만</td>
+      </tr>
+      <tr>
+        <td>SUPABASE_DB_URL</td>
+        <td>개발자 노트북 (<code>.env.local</code>)</td>
+        <td>스크립트 (pg)</td>
+        <td>DB 전체 (superuser-like)</td>
+      </tr>
+      <tr>
+        <td>GEMINI_API_KEY</td>
+        <td>Vercel env + 개발자 노트북</td>
+        <td>Server + 스크립트</td>
+        <td>Gemini API 호출</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>핵심 보안 원칙</h3>
+  <ul>
+    <li><strong>브라우저는 publishable 만</strong> — secret key 가 클라이언트 번들에 절대 들어가면 안 됨. <code>NEXT_PUBLIC_</code> prefix 가 강제 (Next.js 가 build 시 분리)</li>
+    <li><strong>verses 는 secret 만 접근</strong> — RLS ENABLE + 정책 0 = anon 접근 자동 차단</li>
+    <li><strong>SUPABASE_DB_URL 은 개발자 노트북만</strong> — Vercel·브라우저 절대 노출 X. Postgres 접속 = 전체 권한이라 노출되면 치명적</li>
+    <li><strong>키 rotate 가능</strong> — Supabase Dashboard 에서 publishable/secret 각각 rotate. 사고 시 즉시 차단</li>
+  </ul>
+
+  <div class="warn">
+    <strong>과거 사고 사례</strong>
+    개발 중 <code>.env.example</code> 에 placeholder 대신 실제 키를 잠시 적어둔 사고 발생. 즉시 발견 + Supabase Dashboard 에서 두 키 모두 rotate. <code>.env.example</code> 은 <strong>영원히 placeholder 만</strong> 유지하는 게 절대 원칙.
+  </div>
+</section>
+
+<!-- ===================================== -->
+<!-- 9. Future -->
+<!-- ===================================== -->
+<section id="future">
+  <h2><span class="num">9</span>v1 이후 — v1.5 / v2 / v3</h2>
+  <p class="lead">v1 완성 후 가능한 확장 방향.</p>
+
+  <h3>v1.5 SSO — 앱 분리</h3>
+  <p>현재 v1 은 단일 Next.js 앱. v1.5 에서 분리:</p>
+  <ul>
+    <li><strong>앱 1: 인증 포털</strong> (예: <code>auth.example.com</code>) — Supabase Auth 호스팅</li>
+    <li><strong>앱 2: RAG 앱</strong> (예: <code>logos.example.com</code>) — 검색·답변</li>
+    <li>둘 다 <strong>같은 Supabase Auth 공유</strong>. 한 번 로그인하면 둘 다 인증됨 (쿠키 도메인 공유)</li>
+  </ul>
+  <p>v1 의 <code>src/lib/auth/</code> 모듈 캡슐화 결정이 이걸 위한 준비.</p>
+
+  <h3>v2 엔티티 카드</h3>
+  <p>인물 (예: 야곱, 아브라함), 장소 (예: 베델, 예루살렘), 사건 (예: 출애굽) 을 LLM 으로 구조화 추출 → 별도 테이블에 저장 → 답변에 카드 형태로 표시.</p>
+  <pre>-- 예시 스키마
+CREATE TABLE entities (
+  id        bigserial PRIMARY KEY,
+  type      text NOT NULL,  -- 'person' | 'place' | 'event'
+  name      text NOT NULL,
+  summary   text,
+  embedding vector(768)
+);
+
+CREATE TABLE entity_verses (
+  entity_id bigint REFERENCES entities(id),
+  verse_id  bigint REFERENCES verses(id),
+  PRIMARY KEY (entity_id, verse_id)
+);</pre>
+
+  <h3>v3 관계 그래프</h3>
+  <p>v2 의 entities 사이 관계 (예: 야곱 — 아들 → 요셉) 를 추출하여 그래프 시각화. 라이브러리 미정 (react-flow, vis.js 등 후보).</p>
+
+  <div class="note">
+    <strong>학습 가치 순서</strong>
+    v1 (RAG 기본) → v1.5 (SSO 패턴) → v2 (LLM 구조화 추출) → v3 (시각화). 각자 다른 기술 학습 = 포트폴리오 두께 ↑.
+  </div>
+</section>
+
+<!-- ===================================== -->
+<!-- 10. Start guide -->
+<!-- ===================================== -->
+<section id="start">
+  <h2><span class="num">10</span>신입 개발자 시작 가이드</h2>
+  <p class="lead">이 문서를 다 읽었다면 다음에 무엇을 해야?</p>
+
+  <h3>1) 환경 셋업</h3>
+  <p><code>docs/phase-01-handover.html</code> 의 <strong>§4 5분 셋업</strong> 따라하기. Supabase + Gemini API key + <code>.env.local</code> + <code>supabase db push</code> 까지.</p>
+
+  <h3>2) 로컬에서 동작 확인</h3>
+  <pre>pnpm check:supabase   # 6단계 PASS 확인
+pnpm eval:search       # 정량 100% PASS 확인
+pnpm dev               # http://localhost:3000 (현재는 Next.js 기본 페이지)</pre>
+
+  <h3>3) 코드 둘러보기 순서</h3>
+  <ol>
+    <li><code>backlog/phase-01.md</code> — 무엇을 왜 만들었는지 결정 트레일</li>
+    <li><code>scripts/embed-bible.ts</code> — 2-pass 적재 로직 (가장 풍부한 학습 자료)</li>
+    <li><code>scripts/eval-search.ts</code> — 검색 평가 메커니즘</li>
+    <li><code>src/lib/search/cosine.ts</code> — TS wrapper 패턴 (generated types 활용)</li>
+    <li><code>supabase/migrations/</code> — DDL · function 정의</li>
+    <li><code>specs/spec-01-*/walkthrough.md</code> — 각 spec 의 결정·발견·검증 history</li>
+  </ol>
+
+  <h3>4) 다음 작업 후보</h3>
+  <ul>
+    <li><strong>phase-02 진입</strong> — 한국어 질문 → top-K → 프롬프트 조립 (LLM 없이). <code>scripts/eval-search.ts</code> 를 발판으로 진행</li>
+    <li><strong>잔여 임베딩 적재</strong> — backlog Icebox 의 "전체 31k 적재" promote. Tier 1 활성 또는 일일 1,000 씩 누적</li>
+    <li><strong>pgvector 인덱스 검증</strong> — 적재 완료 후 검색 속도 측정. 느려지면 <code>ivfflat lists=sqrt(N)</code> spec-x</li>
+  </ul>
+
+  <h3>5) 막혔을 때</h3>
+  <ul>
+    <li><code>pnpm check:supabase</code> 가 PASS 면 인프라는 정상. 그 이후 단계 확인</li>
+    <li>각 <code>walkthrough.md</code> 의 §발견 사항 — 이미 겪은 함정 모음</li>
+    <li><code>docs/phase-01-handover.html</code> §9 함정 — 6건의 알려진 문제와 우회</li>
+    <li><code>.harness-kit/agent/constitution.md</code> — SDD 거버넌스 (왜 이런 흐름인지)</li>
+  </ul>
+
+  <div class="tip">
+    <strong>처음 자기 작업 시작할 때</strong>
+    <ol style="margin: 8px 0 0;">
+      <li><code>git checkout develop && git pull</code></li>
+      <li><code>bash .harness-kit/bin/sdd status</code> — 현재 상태 확인</li>
+      <li>새 phase 또는 spec-x 시작 — Constitution §3 (Work Type Model) 참조</li>
+      <li>의문점 있으면 <code>specs/spec-01-04-embedding-batch-script/walkthrough.md</code> 같은 비슷한 spec 의 형식 참조</li>
+    </ol>
+  </div>
+</section>
+
+<footer>
+  logos-rag 시스템 아키텍처 인수인계 · v1 비전 기준 (phase-01 완료, phase-02~04 계획) · 2026-05-19 · <a href="https://github.com/pgaey/logos-rag">github.com/pgaey/logos-rag</a>
+</footer>
+
+</div>
+</body>
+</html>
