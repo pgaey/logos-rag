@@ -1,4 +1,4 @@
-# spec-x-phase-doc-html: Phase 완료 시 SVG 다이어그램 HTML 핸드오버 문서 자동 생성
+# spec-x-phase-doc-html: Phase SVG 다이어그램 HTML 문서 자동화 (생성 시점 + 완료 시점)
 
 ## 📋 메타
 
@@ -17,18 +17,19 @@
 
 ### 현재 상황
 
-harness-kit의 Phase 완료 흐름(`/hk-phase-ship`)은 성공 기준 검증 → 통합 테스트 → go/no-go → PR 생성으로 마무리된다. Phase 완료 후 신입 개발자 또는 팀원이 "이 Phase에서 무엇을 했는가"를 파악하려면 `backlog/phase-{N}.md`, `specs/*/walkthrough.md` 등 여러 파일을 직접 뒤져야 한다. 현재 `docs/phase-01-handover.html` 같은 핸드오버 문서는 수동으로 개별 작성하고 있다.
+harness-kit의 Phase 완료 흐름(`/hk-phase-ship`)은 성공 기준 검증 → 통합 테스트 → go/no-go → PR 생성으로 마무리된다. Phase 완료 후 신입 개발자 또는 팀원이 "이 Phase에서 무엇을 했는가"를 파악하려면 `backlog/phase-{N}.md`, `specs/*/walkthrough.md` 등 여러 파일을 직접 뒤져야 한다. 또한 Phase를 시작할 때도 "이 Phase가 시스템에 어떤 아키텍처를 만들어낼 것인가"를 한눈에 보여주는 청사진이 없어, 설계 검증 없이 구현에 돌입하는 경우가 발생한다.
 
 ### 문제점
 
-- Phase 완료마다 핸드오버 HTML을 수동으로 작성하는 반복 비용 발생
+- **시작 시점**: Phase 생성 직후 아키텍처 청사진이 없어 설계 오류를 조기 발견하지 못함
+- **완료 시점**: Phase 완료 후 핸드오버 HTML을 수동으로 작성하는 반복 비용 발생
 - 문서화 품질이 작성자의 숙련도와 시간에 따라 들쭉날쭉함
-- 신입 개발자가 Phase의 전체 그림을 한눈에 파악할 단일 진입점이 없음
 - SVG 다이어그램 없이 텍스트만으로는 아키텍처·흐름 이해에 한계가 있음
+- spec-x는 단발·독립 단위이므로 누적 아키텍처 컨텍스트가 없어 이 문제와 무관
 
 ### 해결 방안 (요약)
 
-`/hk-phase-doc` 슬래시 커맨드(스킬)를 신설하고, `hk-phase-ship` 완료 시 자동으로 호출하도록 통합한다. 이 스킬은 Phase 산출물(phase.md, 각 spec의 spec.md·walkthrough.md)을 읽고, SVG 다이어그램(스펙 타임라인·아키텍처 컴포넌트·데이터 플로우)이 인라인으로 포함된 단일 HTML 파일을 `docs/phase-{N}-handover.html`로 생성한다.
+두 가지 슬래시 커맨드로 Phase 라이프사이클 전반을 커버한다. `/hk-phase-arch`: Phase 생성 직후 아키텍처 청사진 HTML(`docs/phase-{N}-arch.html`)을 생성하여 설계 기준선을 확보. `/hk-phase-doc`: Phase 완료 시 핸드오버 HTML(`docs/phase-{N}-handover.html`)을 생성하여 구현 결과를 기록. 두 문서 모두 인라인 SVG를 포함하며 외부 의존 없이 브라우저에서 동작한다.
 
 ## 📊 개념도
 
@@ -55,7 +56,14 @@ sequenceDiagram
 
 ### Functional Requirements
 
-1. `/hk-phase-doc` 슬래시 커맨드(`.claude/commands/hk-phase-doc.md`)를 신설한다.
+1. `/hk-phase-arch` 슬래시 커맨드(`.claude/commands/hk-phase-arch.md`)를 신설한다. **Phase 생성 시점**에 호출하며 아키텍처 청사진을 생성한다.
+   - Phase 번호 결정 (`$ARGUMENTS` 또는 sdd status)
+   - `backlog/phase-{N}.md` 읽기 (Phase 목표, 예정 Spec 목록)
+   - 청사진 HTML 섹션: Phase 개요, Spec 타임라인 SVG(모두 "계획됨" 상태), 아키텍처 컴포넌트 SVG(점선 테두리 = 미구현), 데이터 플로우 SVG, 예정 Spec 카드
+   - 출력: `docs/phase-{N}-arch.html` (DRAFT BLUEPRINT 표기)
+   - spec-x에는 적용하지 않음 (Phase 소속 Spec에만 의미 있음)
+2. `hk-align.md`에 Phase 생성 직후 `/hk-phase-arch` 호출 안내를 추가한다.
+3. `/hk-phase-doc` 슬래시 커맨드(`.claude/commands/hk-phase-doc.md`)를 신설한다. **Phase 완료 시점**에 호출하며 핸드오버 문서를 생성한다.
 2. 스킬은 현재 active phase 또는 인자로 전달된 phase 번호(`$ARGUMENTS`)를 기준으로 동작한다.
 3. 스킬 실행 시 에이전트는 다음 파일들을 읽고 내용을 분석한다:
    - `backlog/phase-{N}.md` (Phase 메타, spec 목록, 성공 기준, ADR)
@@ -86,6 +94,8 @@ sequenceDiagram
 ## 🚫 Out of Scope
 
 - 기존 수동 작성 HTML(`docs/phase-01-handover.html`)의 소급 재생성
+- `hk-phase-arch` 문서의 Spec 완료 시 점진적 자동 갱신 (Phase 완료 후 `hk-phase-doc`으로 최종 결과 확인)
+- spec-x 단위의 아키텍처 문서 (단발 독립 작업은 Phase 컨텍스트 없음)
 - CI/CD 파이프라인 자동 실행 (Claude Code 세션 밖의 자동화)
 - 다이어그램 편집 UI / 인터랙티브 기능 (정적 SVG로 충분)
 - 다크모드, 반응형 레이아웃 (기본 브라우저 렌더링으로 충분)

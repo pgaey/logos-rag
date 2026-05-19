@@ -50,7 +50,28 @@ Phase ship 완료 후 핸드오버 문서 생성을 안내하는 Step 6 추가.
 
 ---
 
-## Task 4: Ship
+## Task 4: `hk-phase-arch` 슬래시 커맨드 스킬 작성
+
+Phase 생성 시점에 호출하는 아키텍처 청사진 생성 커맨드. "계획됨" 상태(점선)의 SVG로 설계 검증용 draft HTML을 생성한다.
+
+### 4-1. 스킬 파일 작성
+- [ ] `.claude/commands/hk-phase-arch.md` 신규 생성
+  - Phase 번호 결정 (`$ARGUMENTS` 우선, fallback: sdd status)
+  - `backlog/phase-{N}.md` 읽기 (목표, 예정 Spec 목록)
+  - HTML 5개 섹션 (개요, Spec 타임라인 SVG, 아키텍처 SVG, 데이터플로우 SVG, 예정 Spec 카드)
+  - SVG 스타일: 미구현 컴포넌트 = 점선 테두리 + 연한 배경, 계획됨 노드 = 회색
+  - DRAFT BLUEPRINT 배너 포함
+  - 출력: `docs/phase-{N}-arch.html`
+  - spec-x 적용 제외 명시
+- [ ] Commit: `feat(spec-x-phase-doc-html): add hk-phase-arch skill`
+
+### 4-2. `hk-align.md` 통합
+- [ ] `.claude/commands/hk-align.md` Phase 생성 후 `/hk-phase-arch` 호출 안내 추가
+- [ ] Commit: `feat(spec-x-phase-doc-html): integrate hk-phase-arch into hk-align`
+
+---
+
+## Task 5: Ship
 
 > 모든 작업 task 완료 후 `/hk-ship` 절차를 따릅니다.
 
@@ -69,7 +90,7 @@ Phase ship 완료 후 핸드오버 문서 생성을 안내하는 Step 6 추가.
 
 | 항목 | 값 |
 |---|---|
-| **총 Task 수** | 4 (브랜치 + 스킬 + 통합 + Ship) |
-| **예상 commit 수** | 3 |
+| **총 Task 수** | 5 (브랜치 + hk-phase-doc + hk-phase-ship통합 + hk-phase-arch + Ship) |
+| **예상 commit 수** | 5 |
 | **현재 단계** | Planning |
 | **마지막 업데이트** | 2026-05-19 |
