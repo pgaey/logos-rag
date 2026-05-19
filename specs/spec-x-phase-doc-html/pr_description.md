@@ -1,4 +1,4 @@
-# feat(spec-x-phase-doc-html): Phase 완료 시 SVG 다이어그램 HTML 핸드오버 문서 자동 생성
+# feat(spec-x-phase-doc-html): Phase SVG 다이어그램 HTML 문서 자동화 (생성 시점 + 완료 시점)
 
 > 첫 줄은 commit subject와 정확히 일치합니다.
 
@@ -6,64 +6,72 @@
 
 ### 배경 및 목적
 
-Phase 완료 후마다 신입 개발자·팀원이 "이 Phase에서 무엇을 했는가"를 파악하려면 여러 markdown 파일을 직접 뒤져야 했습니다. 핸드오버 HTML도 수동으로 작성하고 있어 품질이 들쭉날쭉하고 비용이 발생했습니다. `/hk-phase-doc` 슬래시 커맨드를 추가하여 이 과정을 자동화합니다.
+Phase 라이프사이클 양 끝에서 문서화 자동화가 부재했습니다:
+- **시작 시점**: Phase 생성 후 아키텍처 청사진이 없어 설계 검증 없이 구현에 돌입
+- **완료 시점**: Phase 완료 후 핸드오버 HTML을 수동 작성하는 반복 비용
+
+두 슬래시 커맨드로 Phase 전체 라이프사이클을 커버합니다.
 
 ### 주요 변경 사항
 
-- [x] **신규**: `.claude/commands/hk-phase-doc.md` — Phase 완료 시 SVG 다이어그램 HTML 생성 슬래시 커맨드
-- [x] **수정**: `.claude/commands/hk-phase-ship.md` — Step 6 추가 (`/hk-phase-doc` 호출 안내)
+- [x] **신규** `.claude/commands/hk-phase-arch.md` — Phase 생성 직후 아키텍처 청사진 HTML 생성 (`docs/phase-{N}-arch.html`). 점선/회색 SVG로 "계획됨" 상태 시각화. spec-x 제외.
+- [x] **신규** `.claude/commands/hk-phase-doc.md` — Phase 완료 후 핸드오버 HTML 생성 (`docs/phase-{N}-handover.html`). 완료 상태 SVG + 신입 개발자 온보딩 섹션.
+- [x] **수정** `.claude/commands/hk-phase-ship.md` — Step 6: Phase ship 완료 후 `/hk-phase-doc` 호출 안내 추가
+- [x] **수정** `.claude/commands/hk-align.md` — Step 6: SDD-P 확정 후 `sdd phase new` 직후 `/hk-phase-arch` 호출 안내 추가
 
 ### Phase 컨텍스트
 
 - **Phase**: spec-x (독립 단발 PR)
-- **본 SPEC의 역할**: 앱 개발 로드맵(phase-02~04)과 무관하게, harness-kit 워크플로우에 문서 자동화 기능을 추가
+- **라이프사이클 커버리지**:
+  ```
+  sdd phase new → /hk-phase-arch  →  docs/phase-{N}-arch.html     [DRAFT BLUEPRINT]
+  (구현 진행)
+  /hk-phase-ship → /hk-phase-doc  →  docs/phase-{N}-handover.html [FINAL HANDOVER]
+  ```
 
 ## 🎯 Key Review Points
 
-1. **`.claude/commands/hk-phase-doc.md`**: 에이전트가 따라야 할 HTML+SVG 생성 지침의 명확성. Phase 번호 결정 로직, 읽어야 할 파일 목록, SVG 3종 생성 가이드라인, 완료 보고 형식이 충분한지 확인.
+1. **`hk-phase-arch.md`**: DRAFT 스타일(점선·회색)이 hk-phase-doc(완료·초록)과 명확히 구분되는지. spec-x 제외 조건이 명시되어 있는지.
 
-2. **`hk-phase-ship.md` Step 6**: 기존 ship 흐름(Step 1~5)에 영향 없이 권장 안내만 추가되었는지 확인. 강제 호출이 아닌 `> /hk-phase-doc 호출 안내` 형태로 선택적임.
+2. **`hk-phase-doc.md`**: SVG 3종(타임라인·컴포넌트·데이터플로우) 생성 가이드라인이 에이전트가 의미 있는 다이어그램을 만들기에 충분한지. placeholder 금지 조항이 명확한지.
+
+3. **`hk-align.md` Step 6**: 강제 실행이 아닌 "한 줄 안내" 수준으로 제한되어 있는지. SDD-P 모드에만 적용됨이 명시되어 있는지.
 
 ## 🧪 Verification
 
-### 자동 테스트
-
-해당 없음 — 마크다운 슬래시 커맨드 파일이므로 코드 로직 없음.
-
 ### 수동 검증 시나리오
 
-1. **스킬 파일 존재 확인**: `ls -la .claude/commands/hk-phase-doc.md` → ✅ 파일 존재
-2. **ship 통합 확인**: `grep -n "hk-phase-doc" .claude/commands/hk-phase-ship.md` → ✅ line 126에서 참조 확인
-3. **스킬 활성화 확인**: Claude Code 세션에서 `/hk-phase-doc` 입력 시 스킬 목록에 나타남
+1. `ls .claude/commands/hk-phase-arch.md` → ✅ 파일 존재
+2. `ls .claude/commands/hk-phase-doc.md` → ✅ 파일 존재
+3. `grep "hk-phase-doc" .claude/commands/hk-phase-ship.md` → ✅ Step 6 확인
+4. `grep "hk-phase-arch" .claude/commands/hk-align.md` → ✅ Step 6 확인
 
 ## 📦 Files Changed
 
 ### 🆕 New Files
 
-- `.claude/commands/hk-phase-doc.md`: Phase 완료 후 SVG 다이어그램 HTML 핸드오버 문서 생성 슬래시 커맨드
-- `specs/spec-x-phase-doc-html/spec.md`: Spec 요구사항 정의
-- `specs/spec-x-phase-doc-html/plan.md`: 실행 계획
-- `specs/spec-x-phase-doc-html/task.md`: 태스크 목록
-- `specs/spec-x-phase-doc-html/walkthrough.md`: 작업 기록
-- `specs/spec-x-phase-doc-html/pr_description.md`: PR 설명 (이 파일)
+- `.claude/commands/hk-phase-arch.md`: Phase 생성 직후 아키텍처 청사진 HTML 생성 슬래시 커맨드
+- `.claude/commands/hk-phase-doc.md`: Phase 완료 후 핸드오버 HTML 생성 슬래시 커맨드
+- `specs/spec-x-phase-doc-html/` (spec, plan, task, walkthrough, pr_description)
 
 ### 🛠 Modified Files
 
-- `.claude/commands/hk-phase-ship.md` (+18): Step 6 "핸드오버 문서 생성" 섹션 추가
-- `backlog/queue.md` (+2): spec-x-phase-doc-html 대기 항목 추가
+- `.claude/commands/hk-phase-ship.md` (+18): Step 6 추가
+- `.claude/commands/hk-align.md` (+12): Step 6 추가
+- `backlog/queue.md` (+2): spec-x 완료 이동
 
-**Total**: 8 files changed
+**Total**: 9 files changed
 
 ## ✅ Definition of Done
 
-- [x] `.claude/commands/hk-phase-doc.md` 스킬 파일 생성 완료
-- [x] `.claude/commands/hk-phase-ship.md` Step 6 통합 완료
-- [x] 수동 검증 PASS (파일 존재, 참조 확인)
+- [x] `hk-phase-arch.md` 스킬 생성 완료
+- [x] `hk-phase-doc.md` 스킬 생성 완료
+- [x] `hk-phase-ship.md` Step 6 통합 완료
+- [x] `hk-align.md` Step 6 통합 완료
 - [x] `walkthrough.md` 작성 완료
-- [x] `pr_description.md` 작성 완료 (이 파일)
+- [x] `pr_description.md` 작성 완료
 
 ## 🔗 관련 자료
 
 - Spec: `specs/spec-x-phase-doc-html/spec.md`
 - Walkthrough: `specs/spec-x-phase-doc-html/walkthrough.md`
-- 관련 스킬: `.claude/commands/hk-phase-ship.md`

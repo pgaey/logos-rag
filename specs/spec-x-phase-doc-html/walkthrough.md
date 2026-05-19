@@ -9,6 +9,9 @@
 | HTML 생성 방식 | bash 스크립트 vs 에이전트 스킬 | 에이전트 스킬 | 아키텍처 다이어그램은 파일 파싱만으로 자동 도출 불가. 에이전트가 spec.md·walkthrough.md를 읽고 추론해야 의미 있는 SVG 생성 가능 |
 | hk-phase-ship 통합 방법 | 강제 호출 vs 권장 안내 | 권장 안내 (Step 6) | Phase 마무리 시 문서 생성이 필수가 아닌 강력 권장. 강제 호출 시 기존 ship 흐름의 자동 진행 원칙과 충돌 |
 | 작업 모드 | SDD-P (phase-02 신설) vs spec-x | spec-x | 기존 앱 개발 로드맵(phase-02~04)을 유지하면서 단발 PR로 완결 가능한 범위 |
+| 아키텍처 문서 생성 시점 | 완료 시점만 vs 생성+완료 양쪽 | 생성+완료 양쪽 | 아키텍처는 끝에 기록하는 회고보다 처음에 그리는 설계 도구로서 더 큰 가치. `/hk-phase-arch`(청사진)와 `/hk-phase-doc`(핸드오버)로 역할 분리 |
+| spec 단위 아키텍처 문서 | spec마다 생성 vs Phase 단위만 | Phase 단위만 | spec마다 별도 HTML을 만들면 N개 파일이 분산. spec 수준은 spec.md의 개념도(Mermaid)로 충분 |
+| hk-phase-arch 호출 방식 | align 자동 실행 vs 사용자 선택 안내 | 사용자 선택 안내 | Phase 생성 직후 강제 실행 시 의도치 않은 파일 생성. 한 줄 안내로 충분 |
 
 ### ADR 승격 가이드
 
@@ -46,7 +49,8 @@
 ## 🔍 발견 사항
 
 - harness-kit 0.13.0에서 `sdd specx new <slug>` 명령이 spec-x 전용으로 분리됨 (구 버전의 `sdd spec new`와 다름)
-- `hk-phase-ship.md`는 harness-kit 업데이트 시 덮어쓰일 수 있는 파일. Step 6 수정 내용이 다음 업데이트에서 유실될 위험 존재 → 향후 `hk-phase-ship`을 사용자 커스텀 영역으로 분리하는 방안 고려 가능
+- `hk-phase-ship.md`, `hk-align.md`는 harness-kit 업데이트 시 덮어쓰일 수 있는 파일. 수정 내용이 다음 업데이트에서 유실될 위험 존재 → 향후 harness-kit에 user-hook 영역(예: `hk-phase-ship.user.md`)을 두는 방안 고려 가능
+- 아키텍처 문서 생성 시점에 대한 논의에서 "완료 후 회고"보다 "시작 전 청사진"이 더 큰 설계 가치를 가짐을 확인 → `/hk-phase-arch` 신설로 해결
 
 ## 🚧 이월 항목
 
