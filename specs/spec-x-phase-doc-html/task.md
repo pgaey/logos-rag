@@ -27,14 +27,14 @@
 Phase 완료 시 호출하는 새 슬래시 커맨드. 에이전트가 Phase 산출물을 읽고 HTML+SVG 핸드오버 문서를 생성하도록 상세 지침을 담는다.
 
 ### 2-1. 스킬 파일 작성
-- [ ] `.claude/commands/hk-phase-doc.md` 신규 생성
+- [x] `.claude/commands/hk-phase-doc.md` 신규 생성
   - Phase 번호 결정 로직 (`$ARGUMENTS` 우선, fallback: sdd status)
   - 읽어야 할 파일 목록 (phase.md, spec.md ×N, walkthrough.md ×N)
   - HTML 7개 섹션 구조 정의
   - SVG 3종 생성 가이드라인 (타임라인, 컴포넌트, 데이터플로우)
   - 출력 경로 지정 (`docs/phase-{N}-handover.html`)
   - 완료 보고 형식
-- [ ] Commit: `feat(spec-x-phase-doc-html): add hk-phase-doc skill`
+- [x] Commit: `feat(spec-x-phase-doc-html): add hk-phase-doc skill`
 
 ---
 
