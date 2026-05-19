@@ -1,6 +1,10 @@
 <!-- HARNESS-KIT:BEGIN -->
+
 @.harness-kit/CLAUDE.fragment.md
+
 <!-- HARNESS-KIT:END -->
+
+@AGENTS.md
 
 ## 터미널 환경: cmux (tmux 아님)
 
@@ -18,12 +22,12 @@
 
 ### 빠른 구분 체크리스트
 
-| 신호 | 도구 |
-|------|------|
-| 사용자가 "cmux" 라고 명시 | **cmux** |
-| 사이드바/탭/내장 브라우저 언급 | **cmux** |
-| macOS 네이티브 GUI 터미널 맥락 | **cmux** |
-| SSH 원격 서버 세션 유지 | tmux |
-| Linux 서버 / Windows / 헤드리스 환경 | tmux |
+| 신호                                 | 도구     |
+| ------------------------------------ | -------- |
+| 사용자가 "cmux" 라고 명시            | **cmux** |
+| 사이드바/탭/내장 브라우저 언급       | **cmux** |
+| macOS 네이티브 GUI 터미널 맥락       | **cmux** |
+| SSH 원격 서버 세션 유지              | tmux     |
+| Linux 서버 / Windows / 헤드리스 환경 | tmux     |
 
 > 헷갈리면 항상 cmux 로 가정하고, tmux 명령으로 답하기 전에 사용자에게 한 번 더 확인할 것.
