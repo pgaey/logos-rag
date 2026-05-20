@@ -58,7 +58,7 @@ sequenceDiagram
 
 ### Functional Requirements
 1. `pnpm add @supabase/ssr` 로 패키지 도입 + `package.json` 반영.
-2. `.env.local.example` (또는 `.env.local`) 에 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` 변수 추가 + 한 줄 설명.
+2. `.env.local.example` (또는 `.env.local`) 에 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` 변수 추가 + 한 줄 설명.
 3. `src/lib/supabase/server.ts` — 서버(RSC / Route Handler) 용 `createClient()` 헬퍼. `next/headers` 의 `cookies()` 사용.
 4. `src/lib/supabase/client.ts` — 브라우저용 `createClient()` 헬퍼.
 5. `src/lib/supabase/proxy.ts` — `updateSession(request)` 헬퍼. `createServerClient` 의 cookie adapter 는 신규 `getAll/setAll` API 사용 (구 `get/set/remove` 는 deprecated). 세션 리프레시 + protected path 시 redirect 반환.

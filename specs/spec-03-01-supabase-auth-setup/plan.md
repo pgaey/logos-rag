@@ -13,7 +13,7 @@
 > [!IMPORTANT]
 > - [ ] Supabase 콘솔에서 본 프로젝트의 Auth 가 활성화돼 있고, Email provider 가 ON 인 것 (개발자가 사전 확인 가능)
 > - [ ] Google OAuth provider 활성화는 본 spec 머지 후/병행 진행 OK — 코드 변경 없음
-> - [ ] `.env.local` 에 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` 값을 사용자가 채워야 dev 서버에서 검증 가능 (현재 anon key 만 없으면 추가)
+> - [ ] `.env.local` 에 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` 값을 사용자가 채워야 dev 서버에서 검증 가능 (현재 anon key 만 없으면 추가)
 
 > [!WARNING]
 > - [ ] **Next.js 16 가 `middleware.ts` → `proxy.ts` 로 리네임함**. 본 spec 은 `proxy.ts` 명명을 사용. (`middleware.ts` 는 deprecated.)
@@ -76,7 +76,7 @@ export async function createClient() {
   const cookieStore = await cookies()
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
       cookies: {
         getAll: () => cookieStore.getAll(),
@@ -100,7 +100,7 @@ import { createBrowserClient } from '@supabase/ssr'
 export function createClient() {
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
   )
 }
 ```
@@ -119,7 +119,7 @@ export async function updateSession(request: NextRequest) {
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
       cookies: {
         getAll: () =>
@@ -194,7 +194,7 @@ describe('isProtectedPath', () => {
 ```text
 # Supabase (phase-03 추가)
 NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-public-key>
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<anon-public-key>
 ```
 
 ### 의존성
