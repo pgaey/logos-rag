@@ -57,6 +57,7 @@
 없음
 - **phase-01** — 데이터 파이프라인 (data-pipeline) — completed 2026-05-19
 - [x] spec-x-phase-doc-html (완료)
+- **phase-2** — ? — completed 2026-05-20
 <!-- sdd:done:end -->
 
 ---

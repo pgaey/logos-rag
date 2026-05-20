@@ -1,6 +1,6 @@
 # phase-02 Search + Prompt Evaluation Report
 
-- **timestamp**: 2026-05-19T13:13:00.129Z
+- **timestamp**: 2026-05-19T15:02:38.782Z
 - **embedded_range**: Genesis 1~34 (1,000 / 31,102 verses)
 - **policy**: quantitative 의 expected 는 적재 범위 안에서만. qualitative_ko 는 out-of-range — 사람 판단 정성 검증
 
