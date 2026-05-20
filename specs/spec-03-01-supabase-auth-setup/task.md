@@ -38,13 +38,13 @@
 ## Task 2: 의존성 추가 + 환경 변수 문서화
 
 ### 2-1. 패키지 설치
-- [ ] `pnpm add @supabase/ssr`
-- [ ] `package.json` / `pnpm-lock.yaml` 변경 확인
+- [x] `pnpm add @supabase/ssr` → 0.10.3 설치
+- [x] `package.json` / `pnpm-lock.yaml` 변경 확인
 
-### 2-2. 환경 변수 추가
-- [ ] `.env.local.example` (또는 동등한 파일) 에 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` 추가
-- [ ] 본인 `.env.local` 에도 실제 값을 채워두기 (커밋 대상 아님)
-- [ ] Commit: `chore(spec-03-01): add @supabase/ssr dependency and env vars`
+### 2-2. 환경 변수 확인
+- [x] `.env.example` 에 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` 이미 존재 — 변경 불필요 (key 이름이 신규 형식이라 spec/plan 만 정정함)
+- [x] `.env.local` 은 개인 환경 — 사용자가 본인 값으로 채워둠
+- [ ] Commit: `chore(spec-03-01): add @supabase/ssr dependency`
 
 ---
 
