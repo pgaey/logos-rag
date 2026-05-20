@@ -96,9 +96,9 @@
 
 ## Task 6: Lint / TypeCheck 점검
 
-- [ ] `pnpm lint` → PASS
-- [ ] `pnpm exec tsc --noEmit` → PASS
-- [ ] 위 두 명령이 모두 통과하면 commit 없이 task 만 체크 (변경이 없으므로). 수정 필요 시 `fix(spec-03-01): ...` 으로 commit.
+- [x] `pnpm lint` → PASS (warning/error 0)
+- [x] `pnpm exec tsc --noEmit` → PASS (에러 0)
+- [x] 변경 없음 → commit 생략
 
 ---
 

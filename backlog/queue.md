@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-03** — 인증 · UI · LLM 통합 (auth-ui-llm) — 1 spec — 다음: spec-03-01-supabase-auth-setup
+- **phase-03** — 인증 · UI · LLM 통합 (auth-ui-llm) — 1 spec — 다음: (spec 없음)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
