@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phase-02 핸드오버 — 검색·프롬프트 조립</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+           max-width: 1100px; margin: 0 auto; padding: 2rem; color: #1a1a2e; background: #f8f9fa; }
+    h1 { font-size: 2rem; color: #16213e; border-bottom: 3px solid #0f3460; padding-bottom: 0.5rem; }
+    h2 { font-size: 1.4rem; color: #0f3460; margin-top: 2.5rem; }
+    h3 { font-size: 1.1rem; color: #533483; }
+    .meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+    .meta-card { background: #fff; border-radius: 8px; padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+    .meta-card .label { font-size: .75rem; color: #888; text-transform: uppercase; letter-spacing: .05em; }
+    .meta-card .value { font-size: 1.1rem; font-weight: 600; color: #16213e; margin-top: .25rem; }
+    .diagram-box { background: #fff; border-radius: 12px; padding: 1.5rem;
+                   box-shadow: 0 2px 12px rgba(0,0,0,.1); margin: 1.5rem 0; overflow-x: auto; }
+    .diagram-title { font-size: .85rem; font-weight: 600; color: #0f3460;
+                     text-transform: uppercase; letter-spacing: .08em; margin-bottom: 1rem; }
+    .spec-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.2rem; }
+    .spec-card { background: #fff; border-radius: 10px; padding: 1.2rem;
+                 box-shadow: 0 2px 8px rgba(0,0,0,.08); border-left: 4px solid #0f3460; }
+    .spec-card .spec-id { font-size: .75rem; color: #888; font-family: monospace; }
+    .spec-card h3 { margin: .4rem 0 .6rem; color: #16213e; }
+    .spec-card .desc { font-size: .9rem; color: #444; line-height: 1.5; }
+    .decision-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    .decision-table th { background: #0f3460; color: #fff; padding: .6rem 1rem; text-align: left; font-size: .85rem; }
+    .decision-table td { padding: .6rem 1rem; border-bottom: 1px solid #eee; font-size: .9rem; }
+    .decision-table tr:nth-child(even) td { background: #f8f9fa; }
+    .start-box { background: #e8f4fd; border-radius: 10px; padding: 1.5rem; border: 1px solid #bee3f8; }
+    .start-box code { background: #16213e; color: #e8f4fd; padding: .2rem .5rem;
+                      border-radius: 4px; font-family: monospace; font-size: .9rem; }
+    .file-list { list-style: none; padding: 0; }
+    .file-list li { padding: .4rem 0; font-family: monospace; font-size: .9rem; }
+    .file-list li::before { content: "📄 "; }
+    .badge { display: inline-block; padding: .2rem .6rem; border-radius: 12px; font-size: .75rem; font-weight: 600; }
+    .badge-done { background: #d4edda; color: #155724; }
+    footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #ddd; font-size: .8rem; color: #888; text-align: center; }
+    .intro { font-size: 1rem; color: #444; line-height: 1.7; margin: 1rem 0 1.5rem; }
+    .test-result { background: #f0fff4; border: 1px solid #9ae6b4; border-radius: 8px; padding: .8rem 1.2rem; font-size: .9rem; color: #276749; font-family: monospace; margin: .5rem 0; }
+  </style>
+</head>
+<body>
+
+<!-- ============================
+     1. Phase 개요
+     ============================ -->
+<h1>Phase-02 핸드오버 — 검색·프롬프트 조립</h1>
+
+<p class="intro">
+  Phase-02 는 Phase-01 에서 구축한 <code>searchVerses()</code> 함수를 기반으로,
+  한국어 질문을 입력받아 verse 검색 → 프롬프트 조립까지의 파이프라인을 완성합니다.
+  LLM 호출 없이 순수한 문자열 조립 함수(<code>buildPrompt</code>)와
+  CLI 스크립트, HTTP API Route 두 가지 인터페이스를 제공하여
+  Phase-03 LLM 통합을 위한 인프라를 구축합니다.
+</p>
+
+<div class="meta-grid">
+  <div class="meta-card">
+    <div class="label">Phase ID</div>
+    <div class="value">phase-02</div>
+  </div>
+  <div class="meta-card">
+    <div class="label">완료일</div>
+    <div class="value">2026-05-20</div>
+  </div>
+  <div class="meta-card">
+    <div class="label">Spec 수</div>
+    <div class="value">3개 (전체 Merged)</div>
+  </div>
+  <div class="meta-card">
+    <div class="label">상태</div>
+    <div class="value"><span class="badge badge-done">Merged</span></div>
+  </div>
+</div>
+
+
+<!-- ============================
+     2. Spec 타임라인 SVG
+     ============================ -->
+<h2>Spec 타임라인</h2>
+<div class="diagram-box">
+  <div class="diagram-title">3개 Spec 진행 순서 — 모두 완료</div>
+  <svg viewBox="0 0 960 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;min-width:640px;">
+    <!-- 수평선 -->
+    <line x1="80" y1="85" x2="880" y2="85" stroke="#27ae60" stroke-width="3"/>
+
+    <!-- 화살표: node1 → node2 -->
+    <line x1="200" y1="85" x2="468" y2="85" stroke="#27ae60" stroke-width="2"/>
+    <polygon points="468,80 480,85 468,90" fill="#27ae60"/>
+
+    <!-- 화살표: node2 → node3 -->
+    <line x1="480" y1="85" x2="748" y2="85" stroke="#27ae60" stroke-width="2"/>
+    <polygon points="748,80 760,85 748,90" fill="#27ae60"/>
+
+    <!-- 노드 1 -->
+    <circle cx="200" cy="85" r="18" fill="#27ae60"/>
+    <text x="200" y="90" text-anchor="middle" fill="white" font-size="13" font-weight="bold">1</text>
+    <!-- 카드 1 -->
+    <rect x="80" y="115" width="240" height="90" rx="8" fill="white" stroke="#27ae60" stroke-width="1.5"/>
+    <text x="200" y="136" text-anchor="middle" fill="#27ae60" font-size="11" font-weight="600">spec-02-01</text>
+    <text x="200" y="152" text-anchor="middle" fill="#16213e" font-size="12" font-weight="700">prompt-template</text>
+    <text x="200" y="170" text-anchor="middle" fill="#555" font-size="10">buildPrompt() 순수 함수</text>
+    <text x="200" y="185" text-anchor="middle" fill="#555" font-size="10">+ Vitest 최초 도입</text>
+
+    <!-- 노드 2 -->
+    <circle cx="480" cy="85" r="18" fill="#27ae60"/>
+    <text x="480" y="90" text-anchor="middle" fill="white" font-size="13" font-weight="bold">2</text>
+    <!-- 카드 2 -->
+    <rect x="360" y="115" width="240" height="90" rx="8" fill="white" stroke="#27ae60" stroke-width="1.5"/>
+    <text x="480" y="136" text-anchor="middle" fill="#27ae60" font-size="11" font-weight="600">spec-02-02</text>
+    <text x="480" y="152" text-anchor="middle" fill="#16213e" font-size="12" font-weight="700">search-cli</text>
+    <text x="480" y="170" text-anchor="middle" fill="#555" font-size="10">CLI + eval-prompt.ts</text>
+    <text x="480" y="185" text-anchor="middle" fill="#555" font-size="10">KO 평가 5/5 (100%)</text>
+
+    <!-- 노드 3 -->
+    <circle cx="760" cy="85" r="18" fill="#27ae60"/>
+    <text x="760" y="90" text-anchor="middle" fill="white" font-size="13" font-weight="bold">3</text>
+    <!-- 카드 3 -->
+    <rect x="640" y="115" width="240" height="90" rx="8" fill="white" stroke="#27ae60" stroke-width="1.5"/>
+    <text x="760" y="136" text-anchor="middle" fill="#27ae60" font-size="11" font-weight="600">spec-02-03</text>
+    <text x="760" y="152" text-anchor="middle" fill="#16213e" font-size="12" font-weight="700">search-api-route</text>
+    <text x="760" y="170" text-anchor="middle" fill="#555" font-size="10">POST /api/search</text>
+    <text x="760" y="185" text-anchor="middle" fill="#555" font-size="10">→ { verses, prompt }</text>
+
+    <!-- 완료 배지 -->
+    <text x="200" y="60" text-anchor="middle" fill="#155724" font-size="10" font-weight="600">✅ Merged</text>
+    <text x="480" y="60" text-anchor="middle" fill="#155724" font-size="10" font-weight="600">✅ Merged</text>
+    <text x="760" y="60" text-anchor="middle" fill="#155724" font-size="10" font-weight="600">✅ Merged</text>
+  </svg>
+</div>
+
+
+<!-- ============================
+     3. 아키텍처 컴포넌트 SVG
+     ============================ -->
+<h2>아키텍처 컴포넌트</h2>
+<div class="diagram-box">
+  <div class="diagram-title">레이어 구조 — Phase-02 신규 · Phase-01 기존 · 외부 서비스</div>
+  <svg viewBox="0 0 960 390" xmlns="http://www.w3.org/2000/svg" style="width:100%;min-width:640px;">
+
+    <!-- 레이어 1 배경: 인터페이스 -->
+    <rect x="0" y="10" width="960" height="95" rx="6" fill="#f0faf0"/>
+    <text x="8" y="26" fill="#27ae60" font-size="11" font-weight="700">🖥 인터페이스</text>
+
+    <!-- CLI: scripts/search-prompt.ts -->
+    <rect x="50" y="22" width="215" height="68" rx="6" fill="white" stroke="#27ae60" stroke-width="1.8" stroke-dasharray="5,3"/>
+    <text x="157" y="46" text-anchor="middle" fill="#16213e" font-size="12" font-weight="700">CLI</text>
+    <text x="157" y="62" text-anchor="middle" fill="#555" font-size="10">scripts/search-prompt.ts</text>
+    <text x="157" y="78" text-anchor="middle" fill="#888" font-size="9">pnpm search:prompt "&lt;질문&gt;"</text>
+
+    <!-- Eval: scripts/eval-prompt.ts -->
+    <rect x="373" y="22" width="215" height="68" rx="6" fill="white" stroke="#27ae60" stroke-width="1.8" stroke-dasharray="5,3"/>
+    <text x="480" y="46" text-anchor="middle" fill="#16213e" font-size="12" font-weight="700">Eval Script</text>
+    <text x="480" y="62" text-anchor="middle" fill="#555" font-size="10">scripts/eval-prompt.ts</text>
+    <text x="480" y="78" text-anchor="middle" fill="#888" font-size="9">pnpm eval:prompt → KO 5/5</text>
+
+    <!-- API: app/api/search/route.ts -->
+    <rect x="696" y="22" width="215" height="68" rx="6" fill="white" stroke="#27ae60" stroke-width="1.8" stroke-dasharray="5,3"/>
+    <text x="803" y="46" text-anchor="middle" fill="#16213e" font-size="12" font-weight="700">API Route</text>
+    <text x="803" y="62" text-anchor="middle" fill="#555" font-size="10">app/api/search/route.ts</text>
+    <text x="803" y="78" text-anchor="middle" fill="#888" font-size="9">POST /api/search</text>
+
+    <!-- 레이어 2 배경: Phase-02 신규 -->
+    <rect x="0" y="115" width="960" height="100" rx="6" fill="#e8f4fd"/>
+    <text x="8" y="131" fill="#2980b9" font-size="11" font-weight="700">📦 Phase-02 신규</text>
+
+    <!-- buildPrompt() -->
+    <rect x="325" y="130" width="310" height="68" rx="6" fill="white" stroke="#2980b9" stroke-width="2.5"/>
+    <text x="480" y="155" text-anchor="middle" fill="#16213e" font-size="13" font-weight="800">buildPrompt()</text>
+    <text x="480" y="173" text-anchor="middle" fill="#555" font-size="10">src/lib/prompt/template.ts</text>
+    <text x="480" y="188" text-anchor="middle" fill="#888" font-size="9">순수 함수 · Vitest 3 tests PASS</text>
+
+    <!-- 레이어 3 배경: Phase-01 기존 -->
+    <rect x="0" y="225" width="960" height="95" rx="6" fill="#f5f5f5"/>
+    <text x="8" y="241" fill="#7f8c8d" font-size="11" font-weight="700">🔌 Phase-01 기존</text>
+
+    <!-- searchVerses() -->
+    <rect x="175" y="240" width="280" height="65" rx="6" fill="white" stroke="#7f8c8d" stroke-width="1.8"/>
+    <text x="315" y="265" text-anchor="middle" fill="#16213e" font-size="13" font-weight="700">searchVerses()</text>
+    <text x="315" y="283" text-anchor="middle" fill="#555" font-size="10">src/lib/search/cosine.ts</text>
+    <text x="315" y="298" text-anchor="middle" fill="#888" font-size="9">cosine 유사도 top-K 반환</text>
+
+    <!-- 레이어 4 배경: 외부 서비스 -->
+    <rect x="0" y="330" width="960" height="58" rx="6" fill="#fffbf0"/>
+    <text x="8" y="346" fill="#e67e22" font-size="11" font-weight="700">☁ 외부 서비스</text>
+
+    <!-- Gemini Embedding API -->
+    <rect x="85" y="342" width="205" height="38" rx="5" fill="white" stroke="#e67e22" stroke-width="1.5"/>
+    <text x="187" y="358" text-anchor="middle" fill="#16213e" font-size="11" font-weight="600">Gemini Embedding API</text>
+    <text x="187" y="373" text-anchor="middle" fill="#888" font-size="9">768d 벡터 생성 (임베딩 전용)</text>
+
+    <!-- Supabase pgvector -->
+    <rect x="570" y="342" width="215" height="38" rx="5" fill="white" stroke="#27ae60" stroke-width="1.5"/>
+    <text x="677" y="358" text-anchor="middle" fill="#16213e" font-size="11" font-weight="600">Supabase pgvector</text>
+    <text x="677" y="373" text-anchor="middle" fill="#888" font-size="9">1,000 verse · cosine 검색</text>
+
+    <!-- 화살표: 레이어1 CLI → buildPrompt -->
+    <line x1="157" y1="90" x2="400" y2="130" stroke="#2980b9" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+    <!-- 화살표: 레이어1 Eval → buildPrompt -->
+    <line x1="480" y1="90" x2="480" y2="130" stroke="#2980b9" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+    <!-- 화살표: 레이어1 API → buildPrompt -->
+    <line x1="803" y1="90" x2="560" y2="130" stroke="#2980b9" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+
+    <!-- 화살표: searchVerses → buildPrompt (위로) -->
+    <line x1="400" y1="240" x2="430" y2="198" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arr-gray)"/>
+
+    <!-- 화살표: searchVerses → Gemini (아래) -->
+    <line x1="270" y1="305" x2="200" y2="342" stroke="#e67e22" stroke-width="1.5" marker-end="url(#arr-orange)"/>
+
+    <!-- 화살표: searchVerses → Supabase (아래 오른쪽) -->
+    <line x1="400" y1="305" x2="620" y2="342" stroke="#27ae60" stroke-width="1.5" marker-end="url(#arr-green)"/>
+
+    <!-- arrowhead 마커 정의 -->
+    <defs>
+      <marker id="arr-blue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L8,3 z" fill="#2980b9"/>
+      </marker>
+      <marker id="arr-gray" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L8,3 z" fill="#7f8c8d"/>
+      </marker>
+      <marker id="arr-orange" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L8,3 z" fill="#e67e22"/>
+      </marker>
+      <marker id="arr-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L8,3 z" fill="#27ae60"/>
+      </marker>
+    </defs>
+  </svg>
+</div>
+
+
+<!-- ============================
+     4. 데이터 플로우 SVG
+     ============================ -->
+<h2>데이터 플로우</h2>
+<div class="diagram-box">
+  <div class="diagram-title">한국어 질문 → 검색 → 조립 → 출력 — 5단계 선형 파이프라인</div>
+  <svg viewBox="0 0 960 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;min-width:640px;">
+    <defs>
+      <marker id="flow-arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L8,3 z" fill="#555"/>
+      </marker>
+    </defs>
+
+    <!-- 박스 1: 한국어 질문 -->
+    <rect x="15" y="45" width="130" height="50" rx="8" fill="#3498db"/>
+    <text x="80" y="67" text-anchor="middle" fill="white" font-size="12" font-weight="700">한국어 질문</text>
+    <text x="80" y="83" text-anchor="middle" fill="#d6eaf8" font-size="10">string 입력</text>
+
+    <!-- 화살표 1 → 2 -->
+    <line x1="145" y1="70" x2="193" y2="70" stroke="#555" stroke-width="1.5" marker-end="url(#flow-arr)"/>
+    <text x="169" y="62" text-anchor="middle" fill="#666" font-size="9">query</text>
+
+    <!-- 박스 2: searchVerses() -->
+    <rect x="200" y="45" width="165" height="60" rx="8" fill="#9b59b6"/>
+    <text x="282" y="67" text-anchor="middle" fill="white" font-size="12" font-weight="700">searchVerses()</text>
+    <text x="282" y="82" text-anchor="middle" fill="#e8daef" font-size="9">Gemini 임베딩</text>
+    <text x="282" y="95" text-anchor="middle" fill="#e8daef" font-size="9">+ Supabase cosine</text>
+
+    <!-- 화살표 2 → 3 -->
+    <line x1="365" y1="70" x2="413" y2="70" stroke="#555" stroke-width="1.5" marker-end="url(#flow-arr)"/>
+    <text x="389" y="62" text-anchor="middle" fill="#666" font-size="9">top-K</text>
+
+    <!-- 박스 3: VerseMatch[] -->
+    <rect x="420" y="45" width="125" height="50" rx="8" fill="#27ae60"/>
+    <text x="482" y="67" text-anchor="middle" fill="white" font-size="12" font-weight="700">VerseMatch[]</text>
+    <text x="482" y="83" text-anchor="middle" fill="#d5f5e3" font-size="10">배열 반환</text>
+
+    <!-- 화살표 3 → 4 -->
+    <line x1="545" y1="70" x2="593" y2="70" stroke="#555" stroke-width="1.5" marker-end="url(#flow-arr)"/>
+    <text x="569" y="62" text-anchor="middle" fill="#666" font-size="9">verses</text>
+
+    <!-- 박스 4: buildPrompt() -->
+    <rect x="600" y="45" width="145" height="60" rx="8" fill="#e74c3c"/>
+    <text x="672" y="67" text-anchor="middle" fill="white" font-size="12" font-weight="700">buildPrompt()</text>
+    <text x="672" y="82" text-anchor="middle" fill="#fadbd8" font-size="9">시스템지침 + 컨텍스트</text>
+    <text x="672" y="95" text-anchor="middle" fill="#fadbd8" font-size="9">+ 질문 조립 (신규)</text>
+
+    <!-- 화살표 4 → 5 -->
+    <line x1="745" y1="70" x2="793" y2="70" stroke="#555" stroke-width="1.5" marker-end="url(#flow-arr)"/>
+    <text x="769" y="62" text-anchor="middle" fill="#666" font-size="9">prompt</text>
+
+    <!-- 박스 5: CLI/API 출력 -->
+    <rect x="800" y="45" width="145" height="50" rx="8" fill="#e67e22"/>
+    <text x="872" y="67" text-anchor="middle" fill="white" font-size="12" font-weight="700">CLI / API 출력</text>
+    <text x="872" y="83" text-anchor="middle" fill="#fdebd0" font-size="10">콘솔 또는 JSON</text>
+
+    <!-- 하단 설명 -->
+    <text x="480" y="135" text-anchor="middle" fill="#555" font-size="11">
+      LLM 호출 없음 — 검색(Phase-01) + 프롬프트 조립(Phase-02)만 수행
+    </text>
+    <text x="480" y="152" text-anchor="middle" fill="#888" font-size="10">
+      Phase-03 에서 buildPrompt 출력이 Gemini Flash LLM 에 직접 투입됩니다
+    </text>
+  </svg>
+</div>
+
+
+<!-- ============================
+     5. Spec별 요약 카드
+     ============================ -->
+<h2>Spec별 요약</h2>
+<div class="spec-cards">
+
+  <!-- spec-02-01 -->
+  <div class="spec-card">
+    <div class="spec-id">spec-02-01 · prompt-template</div>
+    <h3>프롬프트 템플릿 모듈</h3>
+    <div class="desc">
+      <strong>목적</strong>: <code>buildPrompt(question, verses)</code> 순수 함수 작성 — 시스템 지침 + verse 컨텍스트(<code>[Book Ch:V] text</code>) + 사용자 질문을 단일 문자열로 조립.<br><br>
+      <strong>주요 파일</strong>:<br>
+      &nbsp;• <code>src/lib/prompt/template.ts</code><br>
+      &nbsp;• <code>src/lib/prompt/__tests__/template.test.ts</code><br><br>
+      <strong>특이사항</strong>: 이 spec에서 Vitest 4.1.6 최초 도입. <code>pnpm test</code> → 3 tests PASS (166ms).<br>
+      <code>verses</code>가 빈 배열일 때도 "No relevant verses found." 출력.
+    </div>
+    <br><span class="badge badge-done">Merged · commit d485a56</span>
+  </div>
+
+  <!-- spec-02-02 -->
+  <div class="spec-card">
+    <div class="spec-id">spec-02-02 · search-cli</div>
+    <h3>검색·프롬프트 CLI 스크립트</h3>
+    <div class="desc">
+      <strong>목적</strong>: 콘솔에서 검색+프롬프트 조립 흐름을 직접 실행·확인하고, 평가셋을 일괄 실행하여 top-K 포함률 리포트를 생성.<br><br>
+      <strong>주요 파일</strong>:<br>
+      &nbsp;• <code>scripts/search-prompt.ts</code> (<code>pnpm search:prompt</code>)<br>
+      &nbsp;• <code>scripts/eval-prompt.ts</code> (<code>pnpm eval:prompt</code>)<br>
+      &nbsp;• <code>docs/eval/phase-02-prompt-report.md</code> (리포트)<br><br>
+      <strong>결과</strong>: KO 5/5 (100%) — 5개 질의 모두 top-5 안에 정답 chapter verse 포함.
+    </div>
+    <br><span class="badge badge-done">Merged · commit e3ebd72</span>
+  </div>
+
+  <!-- spec-02-03 -->
+  <div class="spec-card">
+    <div class="spec-id">spec-02-03 · search-api-route</div>
+    <h3>검색·프롬프트 API Route</h3>
+    <div class="desc">
+      <strong>목적</strong>: Phase-03 UI와 연동할 HTTP 엔드포인트 제공. <code>POST /api/search</code> → <code>{ verses: VerseMatch[], prompt: string }</code>.<br><br>
+      <strong>주요 파일</strong>:<br>
+      &nbsp;• <code>app/api/search/route.ts</code><br><br>
+      <strong>특이사항</strong>: <code>Response.json()</code> 네이티브 Web API 사용 (Next.js 16 권장). <code>question</code> 빈값 → 400. <code>k</code> 기본 5, 최대 10. LLM 호출 없음.
+    </div>
+    <br><span class="badge badge-done">Merged · commit 9f0b7d1</span>
+  </div>
+
+</div>
+
+
+<!-- ============================
+     6. 핵심 결정 사항 테이블
+     ============================ -->
+<h2>핵심 결정 사항</h2>
+<table class="decision-table">
+  <thead>
+    <tr>
+      <th>Spec</th>
+      <th>이슈</th>
+      <th>결정</th>
+      <th>이유</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>spec-02-01</code></td>
+      <td>테스트 프레임워크 선택</td>
+      <td><strong>Vitest 4.1.6</strong></td>
+      <td>Next.js 16 + ESM 환경에서 Jest는 transform 설정 부담이 큼. Vitest는 설정 최소화 + <code>@/</code> path alias resolve가 간단</td>
+    </tr>
+    <tr>
+      <td><code>spec-02-01</code></td>
+      <td>프롬프트 섹션 구조</td>
+      <td><strong>단일 문자열 (3섹션 결합)</strong></td>
+      <td>Phase-03에서 Gemini Flash SDK의 <code>systemInstruction</code> 필드 분리는 래퍼 함수로 대응 가능. 현재는 단순화 우선</td>
+    </tr>
+    <tr>
+      <td><code>spec-02-01</code></td>
+      <td>verse 표기 형식</td>
+      <td><strong><code>[Book Ch:V]</code> 형식</strong></td>
+      <td>LLM이 출처를 인식하기 좋은 형식. 대괄호로 verse 인용 구분 명확</td>
+    </tr>
+    <tr>
+      <td><code>spec-02-02</code></td>
+      <td>eval 리포트 프롬프트 포함 여부</td>
+      <td><strong>앞 300자 요약 포함</strong></td>
+      <td>전문은 리포트가 너무 길어짐. 300자면 구조 확인에 충분</td>
+    </tr>
+    <tr>
+      <td><code>spec-02-02</code></td>
+      <td>eval:prompt 평가 대상</td>
+      <td><strong>KO만</strong></td>
+      <td>EN은 Phase-01 eval:search에서 이미 100% 검증. Phase-02 Done 기준은 KO ≥ 60%</td>
+    </tr>
+    <tr>
+      <td><code>spec-02-03</code></td>
+      <td>Response API 선택</td>
+      <td><strong><code>Response.json()</code> (네이티브 Web API)</strong></td>
+      <td>Next.js 16 Route Handler 문서가 네이티브 Web API 사용을 권장. <code>NextResponse</code>는 쿠키·리다이렉트 필요 시만 도입</td>
+    </tr>
+    <tr>
+      <td><code>spec-02-03</code></td>
+      <td>k 값 범위 제한</td>
+      <td><strong>max 10</strong></td>
+      <td>무제한 허용 시 Supabase 과부하 가능. 10이면 프롬프트 크기 관리 가능 범위</td>
+    </tr>
+    <tr>
+      <td><code>spec-02-03</code></td>
+      <td>에러 타입 구분</td>
+      <td><strong>400(검증) + 500(내부) 분리</strong></td>
+      <td>클라이언트가 잘못된 입력과 서버 오류를 구분 가능해야 Phase-03 UI에서 적절한 메시지 표시 가능</td>
+    </tr>
+    <tr>
+      <td>Phase-02 전체</td>
+      <td>프롬프트 언어</td>
+      <td><strong>한국어 답변 요청 + 영문 verse 인용</strong></td>
+      <td>Phase-03에서 Gemini Flash에 투입 시 한국어 답변·영문 근거 렌더링이 목표이므로 프롬프트도 동일 형태 선제 반영</td>
+    </tr>
+    <tr>
+      <td>Phase-02 전체</td>
+      <td>API Route LLM 포함 여부</td>
+      <td><strong>미포함 (Phase-03에서 추가)</strong></td>
+      <td>Phase-02 범위는 "LLM 없는 검색·프롬프트 조립"으로 명시. LLM 호출은 Phase-03 Auth·UI와 함께 통합</td>
+    </tr>
+  </tbody>
+</table>
+
+
+<!-- ============================
+     7. 신입 개발자 시작 가이드
+     ============================ -->
+<h2>신입 개발자 시작 가이드</h2>
+<div class="start-box">
+  <h3 style="margin-top:0; color:#0f3460;">Phase-02 핵심 파일 목록</h3>
+  <ul class="file-list">
+    <li><code>src/lib/prompt/template.ts</code> — <strong>buildPrompt()</strong> 핵심 함수</li>
+    <li><code>src/lib/prompt/__tests__/template.test.ts</code> — Vitest 단위 테스트 (3개)</li>
+    <li><code>src/lib/search/cosine.ts</code> — searchVerses() + VerseMatch 타입 (Phase-01 기존)</li>
+    <li><code>scripts/search-prompt.ts</code> — CLI: 질문 → verse 표 + 프롬프트 전문 출력</li>
+    <li><code>scripts/eval-prompt.ts</code> — 평가셋 일괄 실행 + 포함률 리포트 생성</li>
+    <li><code>app/api/search/route.ts</code> — Next.js App Router POST /api/search 핸들러</li>
+    <li><code>data/eval-set.json</code> — 평가 질의셋 (KO 5건 + EN 5건)</li>
+    <li><code>docs/eval/phase-02-prompt-report.md</code> — KO 평가 리포트 (100% 달성)</li>
+  </ul>
+
+  <h3 style="color:#0f3460;">실행 명령 빠른 참조</h3>
+  <p style="margin:.4rem 0;"><strong>단위 테스트 실행:</strong></p>
+  <p style="margin:.2rem 0 1rem;"><code>pnpm test</code></p>
+
+  <p style="margin:.4rem 0;"><strong>한국어 질문 검색 + 프롬프트 조립 (CLI):</strong></p>
+  <p style="margin:.2rem 0 1rem;"><code>pnpm search:prompt "천지창조에 대해 설명해 주세요"</code></p>
+
+  <p style="margin:.4rem 0;"><strong>KO 평가셋 일괄 실행:</strong></p>
+  <p style="margin:.2rem 0 1rem;"><code>pnpm eval:prompt</code></p>
+
+  <p style="margin:.4rem 0;"><strong>API 스모크 테스트 (dev 서버 기동 후):</strong></p>
+  <p style="margin:.2rem 0 1rem;"><code>curl -X POST http://localhost:3000/api/search \<br>&nbsp;&nbsp;-H "Content-Type: application/json" \<br>&nbsp;&nbsp;-d '{"question":"천지창조","k":3}'</code></p>
+
+  <p style="margin:.4rem 0;"><strong>TypeScript 빌드 확인:</strong></p>
+  <p style="margin:.2rem 0 1rem;"><code>pnpm build</code></p>
+
+  <h3 style="color:#0f3460;">Phase-03 이월 항목</h3>
+  <ul style="font-size:.9rem; color:#444; line-height:1.7;">
+    <li><code>POST /api/search</code> 에 Gemini Flash LLM 호출 추가 → 응답 형태를 <code>{ answer, verses }</code>로 확장 예정</li>
+    <li><code>buildPrompt()</code> 는 그대로 유지, Phase-03에서 Gemini Flash SDK의 <code>systemInstruction</code> 필드 분리 시 래퍼 함수만 추가</li>
+    <li>Phase-03: 인증(Auth) + UI 통합 + LLM 호출을 함께 구현</li>
+  </ul>
+
+  <h3 style="color:#0f3460;">검증 결과 요약</h3>
+  <div class="test-result">pnpm test → ✅ 3 tests PASS (166ms) — Vitest 4.1.6</div>
+  <div class="test-result">pnpm eval:prompt → ✅ KO: 5/5 (100%) — 성공 기준 ≥60% 초과 달성</div>
+  <div class="test-result">POST /api/search → ✅ 200 (verses 3건, prompt_len 628) · 빈 question → 400</div>
+  <div class="test-result">pnpm build → ✅ TypeScript 컴파일 성공 · ƒ /api/search (Dynamic) 등록 확인</div>
+</div>
+
+<footer>
+  Phase-02 핸드오버 문서 · 생성일: 2026-05-20 · 소유자: @pgaey · logos-rag 프로젝트
+</footer>
+
+</body>
+</html>
