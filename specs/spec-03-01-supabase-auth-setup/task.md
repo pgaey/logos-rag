@@ -56,9 +56,9 @@
 - [x] Commit: `test(spec-03-01): add failing tests for isProtectedPath`
 
 ### 3-2. 구현 (TDD Green)
-- [ ] `src/lib/supabase/protected-paths.ts` 작성 — `PROTECTED_PREFIXES` 상수 + `isProtectedPath` 함수
-- [ ] `pnpm test` → PASS 확인
-- [ ] Commit: `feat(spec-03-01): implement isProtectedPath utility`
+- [x] `src/lib/supabase/protected-paths.ts` 작성 — `PROTECTED_PREFIXES` 상수 + `isProtectedPath` 함수
+- [x] `pnpm test` → 10/10 PASS
+- [x] Commit: `feat(spec-03-01): implement isProtectedPath utility`
 
 ---
 
