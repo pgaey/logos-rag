@@ -64,15 +64,17 @@
 
 ## Task 4: Supabase server / client 헬퍼
 
+> 발견: `src/lib/supabase/server.ts` / `client.ts` 가 phase-01 산출물로 이미 존재 (`createServerSupabase`, `createBrowserSupabase`). 덮어쓰면 phase-02 회귀 — 신규 `createClient` 를 추가 export 로 공존시킴 (plan 의 [NEW] 는 [MODIFY] 가 정확).
+
 ### 4-1. 서버 헬퍼
-- [ ] `src/lib/supabase/server.ts` — `createClient()` (공식 가이드 기준)
-- [ ] Commit: `feat(spec-03-01): add supabase server client helper`
+- [x] `src/lib/supabase/server.ts` — `createClient()` 추가 (cookie 기반, SSR 인식). 기존 `createServerSupabase` 는 service-key 용도로 유지.
+- [x] Commit: `feat(spec-03-01): add SSR-aware createClient to supabase/server`
 
 ### 4-2. 브라우저 헬퍼
-- [ ] `src/lib/supabase/client.ts` — `createClient()` (공식 가이드 기준)
-- [ ] Commit: `feat(spec-03-01): add supabase browser client helper`
+- [x] `src/lib/supabase/client.ts` — `createClient()` 추가 (@supabase/ssr createBrowserClient 사용). 기존 `createBrowserSupabase` 는 비-SSR 용도로 유지.
+- [x] Commit: `feat(spec-03-01): add SSR-aware createClient to supabase/client`
 
-> Task 4 는 두 파일이 독립적 모듈이므로 2 개 commit 으로 분할. SDK wrapper 라 단위 테스트 ROI 낮음 — TDD 면제 (constitution §9.1 "documentation-only 가 아닌 framework wiring" 으로 분류, walkthrough 에 사유 기록).
+> Task 4 는 SDK wrapper 라 단위 테스트 ROI 낮음 — TDD 면제 (constitution §9.1 framework wiring 으로 분류, walkthrough 에 사유 기록).
 
 ---
 
@@ -81,13 +83,13 @@
 > Next.js 16 에서 `middleware.ts` → `proxy.ts` 로 리네임됨. 본 task 는 새 명명을 사용.
 
 ### 5-1. updateSession 헬퍼
-- [ ] `src/lib/supabase/proxy.ts` — `updateSession(request)` (Supabase 공식 가이드 직역 + `isProtectedPath` 분기)
-- [ ] Commit: `feat(spec-03-01): add updateSession helper for next.js 16 proxy`
+- [x] `src/lib/supabase/proxy.ts` — `updateSession(request)` (Supabase 공식 가이드 직역 + `isProtectedPath` 분기)
+- [x] Commit: `feat(spec-03-01): add updateSession helper for next.js 16 proxy`
 
 ### 5-2. proxy.ts 루트 파일
-- [ ] `proxy.ts` (프로젝트 루트) — `updateSession` 호출 + matcher 설정
-- [ ] `pnpm build` → 빌드 PASS 확인 (proxy 컴파일 OK)
-- [ ] `pnpm dev` → 서버 기동, `/` 접근 시 에러 없음 (수동 1회)
+- [x] `proxy.ts` (프로젝트 루트) — `updateSession` 호출 + matcher 설정
+- [x] `pnpm build` → 빌드 PASS, `ƒ Proxy (Middleware)` 라우트 정상 컴파일
+- [x] `pnpm dev` → 서버 기동, smoke: `GET /` 404 (페이지 없음, 예상대로) / `GET /qa` 307 redirect → /login (proxy + updateSession + isProtectedPath 동작 확인)
 - [ ] Commit: `feat(spec-03-01): wire proxy with session refresh and protected matcher`
 
 ---
