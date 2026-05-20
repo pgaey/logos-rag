@@ -51,9 +51,9 @@
 ## Task 3: isProtectedPath 유틸 (TDD)
 
 ### 3-1. 테스트 작성 (TDD Red)
-- [ ] `src/lib/supabase/__tests__/protected-paths.test.ts` — 4 케이스 (`/qa` 정확 매칭, `/api/qa/x` prefix 매칭, `/login` 비보호, `/api/search` 비보호)
-- [ ] `pnpm test` → Fail 확인 (구현 부재)
-- [ ] Commit: `test(spec-03-01): add failing tests for isProtectedPath`
+- [x] `src/lib/supabase/__tests__/protected-paths.test.ts` — 7 케이스 (정확 매칭 / prefix / 중첩 / 비보호 / phase-02 search 비보호 / root / prefix substring false)
+- [x] `pnpm test` → Fail 확인 ("Cannot find module '../protected-paths'")
+- [x] Commit: `test(spec-03-01): add failing tests for isProtectedPath`
 
 ### 3-2. 구현 (TDD Green)
 - [ ] `src/lib/supabase/protected-paths.ts` 작성 — `PROTECTED_PREFIXES` 상수 + `isProtectedPath` 함수
