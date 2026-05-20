@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phase-02 아키텍처 청사진 — 검색·프롬프트 조립 (DRAFT)</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      max-width: 1100px; margin: 0 auto; padding: 2rem; color: #1a1a2e; background: #f0f4f8;
+    }
+    .draft-banner {
+      background: linear-gradient(135deg, #f39c12, #e67e22);
+      color: white; text-align: center; padding: .75rem;
+      font-weight: 700; font-size: .9rem; letter-spacing: .1em;
+      border-radius: 8px; margin-bottom: 1.5rem;
+    }
+    h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: .4rem; color: #1a1a2e; }
+    h2 { font-size: 1.15rem; font-weight: 600; margin-bottom: .75rem; color: #2c3e6b; }
+    .subtitle { font-size: .95rem; color: #5a6380; margin-bottom: 2rem; }
+    .diagram-box {
+      background: #fff; border-radius: 12px; padding: 1.5rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,.08); margin: 1.5rem 0;
+      border: 2px dashed #aab; overflow-x: auto;
+    }
+    .diagram-box h2 { margin-bottom: 1rem; }
+    .spec-cards {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.2rem;
+    }
+    .spec-card {
+      background: #f7f9fc; border-radius: 10px; padding: 1.1rem;
+      border: 2px dashed #8899bb; position: relative;
+    }
+    .spec-card::before {
+      content: "PLANNED"; position: absolute; top: .5rem; right: .75rem;
+      font-size: .65rem; font-weight: 700; color: #8899bb;
+    }
+    .spec-card h3 { font-size: .95rem; font-weight: 700; color: #2c3e6b; margin-bottom: .3rem; }
+    .spec-card .spec-id { font-size: .75rem; font-weight: 600; color: #8899bb; margin-bottom: .5rem; letter-spacing: .05em; }
+    .spec-card p { font-size: .85rem; color: #4a5470; line-height: 1.5; }
+    .spec-card .file-path { font-size: .75rem; color: #8899bb; margin-top: .5rem; font-family: 'SF Mono', Consolas, monospace; }
+    footer { margin-top: 2rem; font-size: .8rem; color: #8899bb; text-align: center; }
+    svg { display: block; }
+  </style>
+</head>
+<body>
+
+  <div class="draft-banner">⚠ DRAFT — Phase-02 구현 전 아키텍처 청사진 (계획됨)</div>
+
+  <h1>Phase-02: 검색·프롬프트 조립 (search-prompt)</h1>
+  <p class="subtitle">
+    한국어 질문 → verse 검색 → 프롬프트 조립 → LLM 투입 직전 형태 출력.<br>
+    CLI 스크립트와 임시 API route 두 인터페이스로 검증 가능한 상태 구축.
+  </p>
+
+  <!-- ① Spec 타임라인 -->
+  <div class="diagram-box">
+    <h2>① Spec 타임라인</h2>
+    <svg viewBox="0 0 960 220" width="100%" xmlns="http://www.w3.org/2000/svg">
+      <!-- 배경 -->
+      <rect width="960" height="220" fill="#fafbfd"/>
+
+      <!-- 연결선 (node1→node2) -->
+      <line x1="270" y1="122" x2="370" y2="122"
+            stroke="#8899bb" stroke-width="2" stroke-dasharray="4 2"
+            marker-end="url(#arrowGray)"/>
+      <!-- 연결선 (node2→node3) -->
+      <line x1="590" y1="122" x2="690" y2="122"
+            stroke="#8899bb" stroke-width="2" stroke-dasharray="4 2"
+            marker-end="url(#arrowGray)"/>
+
+      <defs>
+        <marker id="arrowGray" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#8899bb"/>
+        </marker>
+      </defs>
+
+      <!-- Node 1: spec-02-01 -->
+      <rect x="50" y="37" width="220" height="85" rx="8"
+            fill="#f0f4f8" stroke="#8899bb" stroke-width="1.5" stroke-dasharray="6 3"/>
+      <text x="160" y="62" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="11" font-weight="700" fill="#2c3e6b">spec-02-01</text>
+      <text x="160" y="80" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="10" font-weight="600" fill="#4a5470">prompt-template</text>
+      <text x="160" y="98" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="9" fill="#6a738a">buildPrompt() 순수 함수</text>
+      <text x="160" y="112" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="9" fill="#6a738a">+ Vitest unit test</text>
+
+      <!-- Node 2: spec-02-02 -->
+      <rect x="370" y="37" width="220" height="85" rx="8"
+            fill="#f0f4f8" stroke="#8899bb" stroke-width="1.5" stroke-dasharray="6 3"/>
+      <text x="480" y="62" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="11" font-weight="700" fill="#2c3e6b">spec-02-02</text>
+      <text x="480" y="80" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="10" font-weight="600" fill="#4a5470">search-cli</text>
+      <text x="480" y="98" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="9" fill="#6a738a">scripts/search-prompt.ts CLI</text>
+      <text x="480" y="112" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="9" fill="#6a738a">+ eval-prompt.ts 평가 스크립트</text>
+
+      <!-- Node 3: spec-02-03 -->
+      <rect x="690" y="37" width="220" height="85" rx="8"
+            fill="#f0f4f8" stroke="#8899bb" stroke-width="1.5" stroke-dasharray="6 3"/>
+      <text x="800" y="62" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="11" font-weight="700" fill="#2c3e6b">spec-02-03</text>
+      <text x="800" y="80" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="10" font-weight="600" fill="#4a5470">search-api-route</text>
+      <text x="800" y="98" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="9" fill="#6a738a">app/api/search/route.ts</text>
+      <text x="800" y="112" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="9" fill="#6a738a">POST API (LLM 없음)</text>
+
+      <!-- 순서 번호 -->
+      <circle cx="160" cy="153" r="10" fill="#8899bb"/>
+      <text x="160" y="157" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="10" font-weight="700" fill="white">1</text>
+      <circle cx="480" cy="153" r="10" fill="#8899bb"/>
+      <text x="480" y="157" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="10" font-weight="700" fill="white">2</text>
+      <circle cx="800" cy="153" r="10" fill="#8899bb"/>
+      <text x="800" y="157" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="10" font-weight="700" fill="white">3</text>
+
+      <!-- 하단 설명 -->
+      <text x="480" y="195" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="9" fill="#9aa0b4">순차 구현 · 각 spec 완료 후 다음 spec 진행</text>
+    </svg>
+  </div>
+
+  <!-- ② 아키텍처 컴포넌트 -->
+  <div class="diagram-box">
+    <h2>② 아키텍처 컴포넌트</h2>
+    <svg viewBox="0 0 960 400" width="100%" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowBlue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#4a7ee6"/>
+        </marker>
+        <marker id="arrowDark" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#6a738a"/>
+        </marker>
+        <marker id="arrowDown" markerWidth="8" markerHeight="8" refX="3" refY="6" orient="auto">
+          <path d="M0,0 L6,0 L3,8 z" fill="#6a738a"/>
+        </marker>
+        <marker id="arrowDownBlue" markerWidth="8" markerHeight="8" refX="3" refY="6" orient="auto">
+          <path d="M0,0 L6,0 L3,8 z" fill="#4a7ee6"/>
+        </marker>
+      </defs>
+
+      <!-- 레이어 1: 인터페이스 (y=10, h=95) -->
+      <rect x="0" y="10" width="960" height="95" rx="6" fill="#eef2f7"/>
+      <text x="14" y="26" font-family="-apple-system,sans-serif"
+            font-size="10" font-weight="700" fill="#5a6380">🖥 인터페이스 레이어</text>
+
+      <!-- CLI -->
+      <rect x="55" y="22" width="215" height="68" rx="6"
+            fill="#f5f8ff" stroke="#4a7ee6" stroke-width="1.5" stroke-dasharray="5 3"/>
+      <text x="162" y="45" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="10" font-weight="700" fill="#2c3e6b">CLI</text>
+      <text x="162" y="60" text-anchor="middle" font-family="'SF Mono',Consolas,monospace"
+            font-size="8.5" fill="#4a5470">scripts/search-prompt.ts</text>
+      <text x="162" y="76" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="8" fill="#8899bb">pnpm search:prompt "질문"</text>
+
+      <!-- Eval -->
+      <rect x="375" y="22" width="215" height="68" rx="6"
+            fill="#f5f8ff" stroke="#4a7ee6" stroke-width="1.5" stroke-dasharray="5 3"/>
+      <text x="482" y="45" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="10" font-weight="700" fill="#2c3e6b">Eval Script</text>
+      <text x="482" y="60" text-anchor="middle" font-family="'SF Mono',Consolas,monospace"
+            font-size="8.5" fill="#4a5470">scripts/eval-prompt.ts</text>
+      <text x="482" y="76" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="8" fill="#8899bb">프롬프트 품질 평가</text>
+
+      <!-- API Route -->
+      <rect x="695" y="22" width="215" height="68" rx="6"
+            fill="#f5f8ff" stroke="#4a7ee6" stroke-width="1.5" stroke-dasharray="5 3"/>
+      <text x="802" y="45" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="10" font-weight="700" fill="#2c3e6b">API Route</text>
+      <text x="802" y="60" text-anchor="middle" font-family="'SF Mono',Consolas,monospace"
+            font-size="8.5" fill="#4a5470">app/api/search/route.ts</text>
+      <text x="802" y="76" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="8" fill="#8899bb">POST /api/search</text>
+
+      <!-- 레이어 2: Phase-02 신규 (y=115, h=100) -->
+      <rect x="0" y="115" width="960" height="100" rx="6" fill="#e8f0fe"/>
+      <text x="14" y="131" font-family="-apple-system,sans-serif"
+            font-size="10" font-weight="700" fill="#3a5ab8">📦 Phase-02 신규</text>
+
+      <!-- buildPrompt -->
+      <rect x="330" y="130" width="300" height="68" rx="6"
+            fill="#dce8fd" stroke="#3a5ab8" stroke-width="2" stroke-dasharray="6 3"/>
+      <text x="480" y="153" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="11" font-weight="700" fill="#1a2e6b">buildPrompt(question, verses)</text>
+      <text x="480" y="170" text-anchor="middle" font-family="'SF Mono',Consolas,monospace"
+            font-size="8.5" fill="#3a5ab8">src/lib/prompt/template.ts</text>
+      <text x="480" y="186" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="8" fill="#5a6ab8">질문 + VerseMatch[] → prompt string</text>
+
+      <!-- 레이어 3: Phase-01 기존 (y=225, h=100) -->
+      <rect x="0" y="225" width="960" height="100" rx="6" fill="#f5f5f5"/>
+      <text x="14" y="241" font-family="-apple-system,sans-serif"
+            font-size="10" font-weight="700" fill="#5a6380">🔌 Phase-01 기존</text>
+
+      <!-- searchVerses -->
+      <rect x="180" y="240" width="270" height="68" rx="6"
+            fill="#ebebeb" stroke="#6a738a" stroke-width="1.5"/>
+      <text x="315" y="263" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="10" font-weight="700" fill="#2c3040">searchVerses(query, k)</text>
+      <text x="315" y="279" text-anchor="middle" font-family="'SF Mono',Consolas,monospace"
+            font-size="8.5" fill="#5a6380">src/lib/search/cosine.ts</text>
+      <text x="315" y="295" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="8" fill="#7a8090">Promise&lt;VerseMatch[]&gt;</text>
+
+      <!-- 레이어 4: 외부 서비스 (y=335, h=58) -->
+      <rect x="0" y="335" width="960" height="58" rx="6" fill="#fafafa"/>
+      <text x="14" y="350" font-family="-apple-system,sans-serif"
+            font-size="10" font-weight="700" fill="#7a8090">☁ 외부 서비스</text>
+
+      <!-- Gemini -->
+      <rect x="100" y="348" width="200" height="38" rx="5"
+            fill="#f0f0f0" stroke="#9aa0b4" stroke-width="1.5"/>
+      <text x="200" y="365" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="9.5" font-weight="600" fill="#4a5060">Gemini Embedding API</text>
+      <text x="200" y="379" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="8" fill="#9aa0b4">text-embedding-004 (768d)</text>
+
+      <!-- Supabase -->
+      <rect x="590" y="348" width="220" height="38" rx="5"
+            fill="#f0f0f0" stroke="#9aa0b4" stroke-width="1.5"/>
+      <text x="700" y="365" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="9.5" font-weight="600" fill="#4a5060">Supabase pgvector</text>
+      <text x="700" y="379" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="8" fill="#9aa0b4">verses 테이블 · 1,000 verse</text>
+
+      <!-- 화살표: CLI → buildPrompt -->
+      <line x1="162" y1="90" x2="390" y2="130"
+            stroke="#4a7ee6" stroke-width="1.5" stroke-dasharray="4 2"
+            marker-end="url(#arrowDownBlue)"/>
+      <!-- 화살표: Eval → buildPrompt -->
+      <line x1="482" y1="90" x2="480" y2="130"
+            stroke="#4a7ee6" stroke-width="1.5" stroke-dasharray="4 2"
+            marker-end="url(#arrowDownBlue)"/>
+      <!-- 화살표: API → buildPrompt -->
+      <line x1="802" y1="90" x2="572" y2="130"
+            stroke="#4a7ee6" stroke-width="1.5" stroke-dasharray="4 2"
+            marker-end="url(#arrowDownBlue)"/>
+
+      <!-- 화살표: searchVerses → buildPrompt (오른쪽으로) -->
+      <line x1="450" y1="275" x2="390" y2="185"
+            stroke="#6a738a" stroke-width="1.5"
+            marker-end="url(#arrowDark)"/>
+      <!-- 화살표: searchVerses → Gemini (아래로) -->
+      <line x1="270" y1="308" x2="210" y2="348"
+            stroke="#6a738a" stroke-width="1.5"
+            marker-end="url(#arrowDark)"/>
+      <!-- 화살표: searchVerses → Supabase (아래로) -->
+      <line x1="360" y1="308" x2="620" y2="348"
+            stroke="#6a738a" stroke-width="1.5"
+            marker-end="url(#arrowDark)"/>
+    </svg>
+  </div>
+
+  <!-- ③ 데이터 플로우 -->
+  <div class="diagram-box">
+    <h2>③ 데이터 플로우</h2>
+    <svg viewBox="0 0 960 200" width="100%" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowFlow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#8899bb"/>
+        </marker>
+      </defs>
+
+      <rect width="960" height="200" fill="#fafbfd"/>
+
+      <!-- 단계 1: 한국어 질문 -->
+      <rect x="20" y="72" width="140" height="55" rx="7"
+            fill="#f0f4f8" stroke="#8899bb" stroke-width="1.5" stroke-dasharray="5 3"/>
+      <text x="90" y="96" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="10" font-weight="700" fill="#2c3e6b">한국어 질문</text>
+      <text x="90" y="112" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="8.5" fill="#6a738a">사용자 입력</text>
+      <text x="90" y="150" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="8" fill="#9aa0b4">① 입력</text>
+
+      <!-- 화살표 1→2 -->
+      <line x1="160" y1="99" x2="212" y2="99"
+            stroke="#8899bb" stroke-width="1.5" stroke-dasharray="4 2"
+            marker-end="url(#arrowFlow)"/>
+
+      <!-- 단계 2: searchVerses (기존) -->
+      <rect x="215" y="72" width="185" height="55" rx="7"
+            fill="#ebebeb" stroke="#6a738a" stroke-width="1.5"/>
+      <text x="307" y="93" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="10" font-weight="700" fill="#2c3040">searchVerses()</text>
+      <text x="307" y="108" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="8" fill="#5a6380">Gemini 임베딩 →</text>
+      <text x="307" y="120" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="8" fill="#5a6380">Supabase cosine 검색</text>
+      <text x="307" y="150" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="8" fill="#9aa0b4">② Phase-01 기존</text>
+
+      <!-- 화살표 2→3 -->
+      <line x1="400" y1="99" x2="452" y2="99"
+            stroke="#8899bb" stroke-width="1.5" stroke-dasharray="4 2"
+            marker-end="url(#arrowFlow)"/>
+
+      <!-- 단계 3: VerseMatch[] -->
+      <rect x="455" y="72" width="140" height="55" rx="7"
+            fill="#f0f4f8" stroke="#8899bb" stroke-width="1.5" stroke-dasharray="5 3"/>
+      <text x="525" y="96" text-anchor="middle" font-family="'SF Mono',Consolas,monospace"
+            font-size="10" font-weight="700" fill="#2c3e6b">VerseMatch[]</text>
+      <text x="525" y="112" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="8.5" fill="#6a738a">유사 구절 목록</text>
+      <text x="525" y="150" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="8" fill="#9aa0b4">③ 중간 데이터</text>
+
+      <!-- 화살표 3→4 -->
+      <line x1="595" y1="99" x2="647" y2="99"
+            stroke="#8899bb" stroke-width="1.5" stroke-dasharray="4 2"
+            marker-end="url(#arrowFlow)"/>
+
+      <!-- 단계 4: buildPrompt (신규) -->
+      <rect x="650" y="72" width="145" height="55" rx="7"
+            fill="#dce8fd" stroke="#3a5ab8" stroke-width="1.5" stroke-dasharray="5 3"/>
+      <text x="722" y="93" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="10" font-weight="700" fill="#1a2e6b">buildPrompt()</text>
+      <text x="722" y="108" text-anchor="middle" font-family="'SF Mono',Consolas,monospace"
+            font-size="8" fill="#3a5ab8">template.ts</text>
+      <text x="722" y="120" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="8" fill="#5a6ab8">프롬프트 조립</text>
+      <text x="722" y="150" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="8" fill="#3a5ab8">④ Phase-02 신규</text>
+
+      <!-- 화살표 4→5 -->
+      <line x1="795" y1="99" x2="847" y2="99"
+            stroke="#8899bb" stroke-width="1.5" stroke-dasharray="4 2"
+            marker-end="url(#arrowFlow)"/>
+
+      <!-- 단계 5: LLM 투입용 prompt -->
+      <rect x="850" y="72" width="95" height="55" rx="7"
+            fill="#dce8fd" stroke="#3a5ab8" stroke-width="1.5" stroke-dasharray="5 3"/>
+      <text x="897" y="93" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="9" font-weight="700" fill="#1a2e6b">LLM용</text>
+      <text x="897" y="107" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="9" font-weight="700" fill="#1a2e6b">prompt</text>
+      <text x="897" y="120" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="8" fill="#5a6ab8">string</text>
+      <text x="897" y="150" text-anchor="middle" font-family="-apple-system,sans-serif"
+            font-size="8" fill="#3a5ab8">⑤ Phase-03 연동</text>
+
+      <!-- 범례 -->
+      <rect x="20" y="175" width="12" height="8" rx="2" fill="#ebebeb" stroke="#6a738a" stroke-width="1"/>
+      <text x="38" y="183" font-family="-apple-system,sans-serif" font-size="8" fill="#6a738a">Phase-01 기존</text>
+      <rect x="130" y="175" width="12" height="8" rx="2" fill="#dce8fd" stroke="#3a5ab8" stroke-width="1" stroke-dasharray="3 2"/>
+      <text x="148" y="183" font-family="-apple-system,sans-serif" font-size="8" fill="#3a5ab8">Phase-02 신규</text>
+    </svg>
+  </div>
+
+  <!-- ④ Spec 카드 -->
+  <div class="diagram-box">
+    <h2>④ Spec 카드</h2>
+    <div class="spec-cards">
+
+      <div class="spec-card">
+        <div class="spec-id">spec-02-01</div>
+        <h3>prompt-template</h3>
+        <p>
+          <code>buildPrompt(question, verses)</code> 순수 함수 구현.<br>
+          질문과 검색된 구절 목록을 받아 LLM에 투입할 프롬프트 문자열 반환.
+          Vitest unit test로 동작 검증.
+        </p>
+        <div class="file-path">src/lib/prompt/template.ts</div>
+      </div>
+
+      <div class="spec-card">
+        <div class="spec-id">spec-02-02</div>
+        <h3>search-cli</h3>
+        <p>
+          <code>pnpm search:prompt "&lt;질문&gt;"</code> CLI 스크립트 구현.<br>
+          터미널에서 직접 검색→프롬프트 조립 파이프라인 실행 가능.
+          <code>eval-prompt.ts</code>로 프롬프트 품질 평가.
+        </p>
+        <div class="file-path">scripts/search-prompt.ts · scripts/eval-prompt.ts</div>
+      </div>
+
+      <div class="spec-card">
+        <div class="spec-id">spec-02-03</div>
+        <h3>search-api-route</h3>
+        <p>
+          <code>POST /api/search</code> Next.js API route 구현.<br>
+          LLM 없이 검색+프롬프트 조립 결과만 반환. Phase-03 LLM 연동 준비.
+        </p>
+        <div class="file-path">app/api/search/route.ts</div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    Phase-02 아키텍처 청사진 · DRAFT · 생성일 2026-05-19 · logos-rag
+  </footer>
+
+</body>
+</html>
