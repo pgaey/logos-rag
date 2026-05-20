@@ -1,0 +1,125 @@
+# Task List: spec-03-01
+
+> 모든 task 는 한 commit 에 대응합니다 (One Task = One Commit).
+> 매 commit 직후 본 파일의 체크박스를 갱신해야 합니다.
+
+## Pre-flight (Plan 작성 단계)
+
+- [x] Spec ID 확정 및 디렉토리 생성 (`sdd spec new supabase-auth-setup`)
+- [x] spec.md 작성
+- [x] plan.md 작성
+- [x] task.md 작성 (이 파일)
+- [x] 백로그 업데이트 (`backlog/phase-03.md` SPEC 표 자동 갱신)
+- [ ] 사용자 Plan Accept
+
+---
+
+## Task 1: 공식 문서 조사 + 브랜치 생성
+
+> Supabase 공식 가이드 (`@supabase/ssr` + Next.js App Router) 를 context7 로 조회하여, plan.md 의 파일 경로/시그니처가 최신 권장과 일치하는지 검증. 차이가 있으면 plan.md 를 먼저 갱신한 후 다음 task 진행.
+
+### 1-1. 브랜치 생성
+- [x] `git checkout -b spec-03-01-supabase-auth-setup` (브랜치 이름 = spec 디렉토리 이름)
+- [x] Commit: 없음 (브랜치 생성만)
+
+### 1-2. context7 로 공식 문서 조회
+- [x] context7 MCP: `@supabase/ssr` Next.js App Router 통합 가이드 조회 (`/supabase/ssr`)
+- [x] Next.js 16 `node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/proxy.md` 직접 확인 (AGENTS.md 지침)
+- [x] 결과를 본 task 1-3 의 spec.md / plan.md 갱신 입력으로 사용
+
+### 1-3. 차이 발견 시 plan.md / spec.md 갱신
+- [x] 공식 가이드와 plan.md 의 파일 경로/시그니처 비교. 차이 발견 시 plan.md 의 [NEW] 섹션 갱신.
+- [x] (선택) spec.md 의 요구사항 6~7 항목도 함께 갱신.
+- [ ] Commit: `docs(spec-03-01): align plan with latest @supabase/ssr and next.js 16 proxy`
+  - 발견 사항: ① Next.js 16: `middleware.ts` → `proxy.ts` 리네임 ② Supabase: cookie adapter `get/set/remove` deprecated → `getAll/setAll` 사용 ③ Supabase 공식 middleware 예시 직역 (request.cookies.set + response.cookies.set 동시 갱신)
+
+---
+
+## Task 2: 의존성 추가 + 환경 변수 문서화
+
+### 2-1. 패키지 설치
+- [ ] `pnpm add @supabase/ssr`
+- [ ] `package.json` / `pnpm-lock.yaml` 변경 확인
+
+### 2-2. 환경 변수 추가
+- [ ] `.env.local.example` (또는 동등한 파일) 에 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` 추가
+- [ ] 본인 `.env.local` 에도 실제 값을 채워두기 (커밋 대상 아님)
+- [ ] Commit: `chore(spec-03-01): add @supabase/ssr dependency and env vars`
+
+---
+
+## Task 3: isProtectedPath 유틸 (TDD)
+
+### 3-1. 테스트 작성 (TDD Red)
+- [ ] `src/lib/supabase/__tests__/protected-paths.test.ts` — 4 케이스 (`/qa` 정확 매칭, `/api/qa/x` prefix 매칭, `/login` 비보호, `/api/search` 비보호)
+- [ ] `pnpm test` → Fail 확인 (구현 부재)
+- [ ] Commit: `test(spec-03-01): add failing tests for isProtectedPath`
+
+### 3-2. 구현 (TDD Green)
+- [ ] `src/lib/supabase/protected-paths.ts` 작성 — `PROTECTED_PREFIXES` 상수 + `isProtectedPath` 함수
+- [ ] `pnpm test` → PASS 확인
+- [ ] Commit: `feat(spec-03-01): implement isProtectedPath utility`
+
+---
+
+## Task 4: Supabase server / client 헬퍼
+
+### 4-1. 서버 헬퍼
+- [ ] `src/lib/supabase/server.ts` — `createClient()` (공식 가이드 기준)
+- [ ] Commit: `feat(spec-03-01): add supabase server client helper`
+
+### 4-2. 브라우저 헬퍼
+- [ ] `src/lib/supabase/client.ts` — `createClient()` (공식 가이드 기준)
+- [ ] Commit: `feat(spec-03-01): add supabase browser client helper`
+
+> Task 4 는 두 파일이 독립적 모듈이므로 2 개 commit 으로 분할. SDK wrapper 라 단위 테스트 ROI 낮음 — TDD 면제 (constitution §9.1 "documentation-only 가 아닌 framework wiring" 으로 분류, walkthrough 에 사유 기록).
+
+---
+
+## Task 5: proxy (Next.js 16) + updateSession 통합
+
+> Next.js 16 에서 `middleware.ts` → `proxy.ts` 로 리네임됨. 본 task 는 새 명명을 사용.
+
+### 5-1. updateSession 헬퍼
+- [ ] `src/lib/supabase/proxy.ts` — `updateSession(request)` (Supabase 공식 가이드 직역 + `isProtectedPath` 분기)
+- [ ] Commit: `feat(spec-03-01): add updateSession helper for next.js 16 proxy`
+
+### 5-2. proxy.ts 루트 파일
+- [ ] `proxy.ts` (프로젝트 루트) — `updateSession` 호출 + matcher 설정
+- [ ] `pnpm build` → 빌드 PASS 확인 (proxy 컴파일 OK)
+- [ ] `pnpm dev` → 서버 기동, `/` 접근 시 에러 없음 (수동 1회)
+- [ ] Commit: `feat(spec-03-01): wire proxy with session refresh and protected matcher`
+
+---
+
+## Task 6: Lint / TypeCheck 점검
+
+- [ ] `pnpm lint` → PASS
+- [ ] `pnpm exec tsc --noEmit` → PASS
+- [ ] 위 두 명령이 모두 통과하면 commit 없이 task 만 체크 (변경이 없으므로). 수정 필요 시 `fix(spec-03-01): ...` 으로 commit.
+
+---
+
+## Task 7: Ship (필수)
+
+> `/hk-ship` 절차를 따릅니다.
+
+- [ ] `pnpm test` → 전체 PASS
+- [ ] `pnpm lint`, `pnpm exec tsc --noEmit` → 모두 PASS
+- [ ] **walkthrough.md 작성** (구현 결과, 공식 가이드와의 일치 여부, 결정 기록 "auth-cookie-session" ADR 후보 처리 등)
+- [ ] **pr_description.md 작성** (템플릿 준수)
+- [ ] **Ship Commit**: `docs(spec-03-01): ship walkthrough and pr description`
+- [ ] **Push**: `git push -u origin spec-03-01-supabase-auth-setup`
+- [ ] **PR 생성**: `/hk-pr-gh` 또는 `gh pr create` — base 는 `phase-03-auth-ui-llm` (sdd 가 ship 시 자동 생성)
+- [ ] **사용자 알림**: 푸시 완료 + PR URL 보고
+
+---
+
+## 진행 요약
+
+| 항목 | 값 |
+|---|---|
+| **총 Task 수** | 7 |
+| **예상 commit 수** | 8 (Task 1-3 선택, Task 4 분할, Task 6 선택 포함 기준 6~10) |
+| **현재 단계** | Planning |
+| **마지막 업데이트** | 2026-05-20 |
