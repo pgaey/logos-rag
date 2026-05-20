@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-(active phase 없음. `bin/sdd phase new <slug>` 로 시작)
+- **phase-03** — 인증 · UI · LLM 통합 (auth-ui-llm) — 1 spec — 다음: spec-03-01-supabase-auth-setup
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
@@ -27,7 +27,7 @@
 - [ ] 보류: spec-05-02 (dependency 해소 후 재검토)
 -->
 
-- [ ] **전체 31k verse 임베딩 적재** (현재 1,000/31,102) — Gemini 무료 tier RPD 1,000 한도 도달. 다음 중 하나 선택 시 promote:
+- [ ] **전체 31k verse 임베딩 적재** (현재 3,011/31,102 — Genesis·Exodus 완료 + Leviticus 1~11; 2026-05-20 +1,005) — Gemini 무료 tier RPD 1,000 한도 도달. 매일 `pnpm embed:bible` FF 실행으로 점진 적재 중. 즉시 완료가 필요하면:
   - (a) Gemini Tier 1 billing 활성 후 `pnpm embed:bible` 재실행 (분 단위 완료, ~$0.10 미만)
   - (b) v2 phase 에서 OpenAI text-embedding-3-small 등 다른 provider 도입
   - 영향: spec-01-05 cosine 검색 평가 정확도. 현재 1,000 verse 로도 검색 logic 검증 가능하지만 평가셋 정답 verse 가 적재 안 됐을 수 있음
@@ -58,6 +58,7 @@
 - **phase-01** — 데이터 파이프라인 (data-pipeline) — completed 2026-05-19
 - [x] spec-x-phase-doc-html (완료)
 - **phase-2** — ? — completed 2026-05-20
+- **phase-02** — 검색·프롬프트 조립 (search-prompt) — completed 2026-05-20
 <!-- sdd:done:end -->
 
 ---
