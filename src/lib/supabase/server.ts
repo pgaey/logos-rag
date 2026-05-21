@@ -1,16 +1,29 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
-export function createServerSupabase(): SupabaseClient {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const secret = process.env.SUPABASE_SECRET_KEY
+export async function createClient() {
+  const cookieStore = await cookies();
 
-  if (!url || !secret) {
-    throw new Error(
-      'Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SECRET_KEY. Check .env.local.',
-    )
-  }
-
-  return createClient(url, secret, {
-    auth: { persistSession: false },
-  })
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet, _headers) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options),
+            );
+          } catch {
+            // The `setAll` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
+        },
+      },
+    },
+  );
 }
