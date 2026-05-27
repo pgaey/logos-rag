@@ -40,7 +40,8 @@ Supabase Auth 기반 로그인을 갖춘 Next.js App Router 페이지에서 사�
 <!-- sdd:specs:start -->
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
-| `spec-03-01` | supabase-auth-setup | P? | Active | `specs/spec-03-01-supabase-auth-setup/` |
+| `spec-03-01` | supabase-auth-setup | P0 | Merged | `specs/spec-03-01-supabase-auth-setup/` |
+| `spec-03-02` | auth-ui-pages | P? | Merged | `specs/spec-03-02-auth-ui-pages/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`

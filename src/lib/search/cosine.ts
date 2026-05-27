@@ -1,5 +1,5 @@
 import { GoogleGenAI } from '@google/genai'
-import { createServerSupabase } from '@/lib/supabase/server'
+import { createServerSupabase } from '@/lib/supabase/admin'
 import type { Database } from '@/lib/db/types'
 
 // ── 상수 ────────────────────────────────────────────────────────────────────
@@ -35,7 +35,7 @@ export async function searchVerses(
     throw new Error(`searchVerses: failed to get embedding values for query "${query}"`)
   }
 
-  // 3. Supabase 클라이언트 생성
+  // 3. Supabase 클라이언트 생성 (service-role, App Router 밖에서도 안전)
   const supabase = createServerSupabase()
 
   // 4. match_verses RPC 호출
