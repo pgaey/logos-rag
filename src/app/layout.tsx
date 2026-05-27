@@ -25,14 +25,9 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // TODO(spec-03-02): 로그인 상태를 Supabase 에서 조회해 헤더 렌더링에 사용.
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const userEmail = data?.claims?.email ?? null;
-  if (data) {
-    console.log("User claims:", data);
-    console.log("userEmail:", userEmail);
-  }
 
   const signOutAction = async () => {
     "use server";
