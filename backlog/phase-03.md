@@ -22,12 +22,12 @@
 phase-01 에서 KJV/WEB 31,102 verse 텍스트 적재 + pgvector 검색 인프라가 완성되었고 (현재 임베딩 3,011/31,102, 매일 무료 tier 로 점진 적재 중), phase-02 에서 한국어 질문 → `searchVerses` → `buildPrompt` → 완성 프롬프트 문자열까지의 흐름이 CLI 와 `POST /api/search` 로 검증 가능한 상태가 되었습니다. 그러나 아직 (a) 실제 사용자가 접근할 수 있는 UI 와 인증이 없고, (b) Gemini Flash 호출이 빠져 있어 프롬프트는 만들어도 답변이 나오지 않습니다. 외부에 공개하려면 두 가지를 함께 메워야 합니다.
 
 ### 목표 (Goal)
-Supabase Auth 기반 로그인을 갖춘 Next.js App Router 페이지에서 사용자가 한국어 질문을 입력하면, `/api/qa` 가 phase-02 의 검색·프롬프트 조립 결과를 Gemini Flash 에 투입해 한국어 답변 + 영문 근거 verse 카드를 함께 렌더링하는 엔드투엔드 플로우를 완성한다. 로컬에서 회원가입 → 로그인 → 질문 → 답변·근거 표시까지 손으로 검증 가능한 MVP 가 결과물.
+Supabase Auth 기반 로그인을 갖춘 Next.js App Router 페이지에서 사용자가 한국어 질문을 입력하면, Server Action `askQuestion` 이 phase-02 의 검색·프롬프트 조립 결과를 Gemini Flash 에 투입해 한국어 답변 + 영문 근거 verse 카드를 함께 렌더링하는 엔드투엔드 플로우를 완성한다. 로컬에서 회원가입 → 로그인 → 질문 → 답변·근거 표시까지 손으로 검증 가능한 MVP 가 결과물.
 
 ### 성공 기준 (Success Criteria) — 정량 우선
 1. 회원가입 → 로그인 → 보호 경로 진입 → 로그아웃 흐름이 로컬 dev 서버에서 **수동 시나리오 PASS**
-2. 미인증 상태로 `/qa` 직접 접근 시 `/login` 으로 redirect, 미인증 `POST /api/qa` 호출 시 **401 응답** (자동 검증)
-3. 로그인 상태에서 한국어 질문 입력 시 `/api/qa` 가 **5~15초 내 200 응답** 반환, 응답 body 는 `{ answer: string, verses: VerseMatch[] }` 구조 (스모크 테스트)
+2. 미인증 상태로 `/qa` 직접 접근 시 `/login` 으로 redirect, 미인증 상태에서 `askQuestion` Server Action 호출 시 **인증 실패 throw** (자동 검증 — action 직접 import 한 unit test)
+3. 로그인 상태에서 한국어 질문 입력 시 `askQuestion` Server Action 이 **5~15초 내** 결과 반환, 결과 객체는 `{ answer: string, verses: VerseMatch[] }` 구조 (스모크 테스트)
 4. UI 에서 답변 본문 (한국어 텍스트) + 근거 verse 카드 (book chapter:verse + 영문 텍스트) 가 동시에 표시됨 (수동 확인)
 5. `src/lib/llm/gemini.ts` 의 unit test PASS (mock 기반)
 
@@ -48,16 +48,16 @@ Supabase Auth 기반 로그인을 갖춘 Next.js App Router 페이지에서 사�
 
 ### spec-03-01 — supabase-auth-setup
 
-- **요점**: Supabase Auth 활성화 + `@supabase/ssr` 기반 서버/클라이언트 헬퍼 + middleware 세션 검증
+- **요점**: Supabase Auth 활성화 + `@supabase/ssr` 기반 서버/클라이언트 헬퍼 + proxy (Next.js 16, 구 middleware) 세션 검증
 - **방향성**:
-  - **공식 문서 우선**: 구현 전 context7 MCP 로 `@supabase/ssr` + Next.js App Router 통합 최신 가이드를 직접 조회하고, 그 권장 디렉토리 구조 (`lib/supabase/server.ts`, `lib/supabase/client.ts`, `middleware.ts`) 를 그대로 따른다. 임의 구조 만들지 않음.
+  - **공식 문서 우선**: 구현 전 context7 MCP 로 `@supabase/ssr` + Next.js App Router 통합 최신 가이드를 직접 조회하고, 그 권장 디렉토리 구조 (`lib/supabase/server.ts`, `lib/supabase/client.ts`, `proxy.ts`) 를 그대로 따른다. 임의 구조 만들지 않음.
   - Supabase 의 "session" 은 stateless JWT 묶음 (cookie 저장) 으로 Vercel 멀티 인스턴스 / serverless 환경에서 sticky session 없이 동작 — 이 사실을 walkthrough 결정 기록에 명시.
   - 이메일 + 1 개 소셜 provider (Google) 만 활성화. 추가 provider 는 v1 이후.
-  - middleware.ts 는 `/qa` 및 `/api/qa` 경로를 보호.
+  - `src/proxy.ts` (Next.js 16 컨벤션, 구 middleware) 는 `/qa` 경로의 세션을 갱신하고 보호.
 - **참조**:
   - Supabase 공식: `@supabase/ssr` Next.js App Router quickstart (context7 조회)
-  - `node_modules/next/dist/docs/` — middleware / cookies API (AGENTS.md 지침)
-- **연관 모듈**: `src/lib/supabase/server.ts`, `src/lib/supabase/client.ts`, `middleware.ts`, `.env.local`
+  - `node_modules/next/dist/docs/` — proxy / cookies API (AGENTS.md 지침)
+- **연관 모듈**: `src/lib/supabase/server.ts`, `src/lib/supabase/client.ts`, `src/proxy.ts`, `src/lib/supabase/proxy.ts`, `.env.local`
 
 ### spec-03-02 — auth-ui-pages
 
@@ -84,33 +84,37 @@ Supabase Auth 기반 로그인을 갖춘 Next.js App Router 페이지에서 사�
   - Gemini API 문서 (context7 조회) — `models.generateContent` 시그니처
 - **연관 모듈**: `src/lib/llm/gemini.ts`, `src/lib/llm/__tests__/gemini.test.ts`
 
-### spec-03-04 — qa-api-route
+### spec-03-04 — qa-server-action
 
-- **요점**: `app/api/qa/route.ts` — 인증 확인 + 검색 + 프롬프트 조립 + LLM 호출을 묶은 통합 엔드포인트
+- **요점**: `src/app/qa/actions.ts` — Server Action `askQuestion(input)` 으로 인증 확인 + 검색 + 프롬프트 조립 + LLM 호출을 묶은 통합 mutation 핸들러
 - **방향성**:
-  - POST `{ question: string, k?: number }` 수신.
-  - 흐름: middleware 가 1차 차단, route 에서 한 번 더 `getUser()` 로 검증 (defence in depth) → `searchVerses(question, k)` → `buildPrompt(question, verses)` → `generateAnswer(prompt)` → `{ answer, verses }` 응답.
-  - 입력 검증: `question` 비어있음·과도한 길이 거부. `k` 기본 5.
-  - 에러 매핑: 미인증 401, 입력 오류 400, Gemini 429 → 429 그대로 전달, 그 외 500.
-  - 기존 `/api/search` 는 LLM 없는 검색 전용으로 유지 (phase-02 유산). 신규 `/api/qa` 가 LLM 포함 흐름.
+  - Next.js 공식 가이드 기준 mutation 은 Server Action 권장 — Route Handler (`/api/qa`) 대신 `'use server'` async function 채택. (`data-security.mdx`, `mutating-data.mdx`)
+  - 시그니처: `askQuestion(input: { question: string; k?: number }): Promise<AskResult>` — typed object 인자 (FormData 아님, 클라이언트는 typed payload 로 호출).
+  - 결과 타입: `type AskResult = { ok: true; answer: string; verses: VerseMatch[] } | { ok: false; reason: 'unauthorized' | 'invalid-input' | 'rate-limit' | 'unknown' }` (HTTP status 매핑 없음 — 클라이언트가 typed result 분기).
+  - 흐름: `src/proxy.ts` 가 1차 세션 갱신, action 안에서 `getUser()` 로 인증 재검증 (defence in depth) → `searchVerses(question, k)` → `buildPrompt(question, verses)` → `generateAnswer(prompt)` → typed 결과 반환.
+  - 입력 검증: `question` 비어있음·과도한 길이 → `{ ok: false, reason: 'invalid-input' }`. `k` 기본 5.
+  - 에러 분류: 인증 실패 / rate limit / 기타 → typed result. 예외 throw 는 unknown 으로만.
+  - 기존 `/api/search` (phase-02) 는 검색 단독 Route Handler 로 유지 — 회귀 보호.
 - **참조**:
-  - `app/api/search/route.ts` — phase-02 API route 패턴
+  - Next.js 공식: `data-security.mdx`, `mutating-data.mdx`, `forms.mdx` (context7 조회)
+  - `src/app/api/search/route.ts` — phase-02 검색 API 패턴 (참고용, 본 spec 은 미사용)
   - spec-03-03 산출물 (`generateAnswer`)
-- **연관 모듈**: `app/api/qa/route.ts`, `src/lib/search/cosine.ts`, `src/lib/prompt/template.ts`, `src/lib/llm/gemini.ts`
+- **연관 모듈**: `src/app/qa/actions.ts`, `src/lib/search/cosine.ts`, `src/lib/prompt/template.ts`, `src/lib/llm/gemini.ts`, `src/lib/supabase/server.ts`
 
 ### spec-03-05 — qa-page-ui
 
-- **요점**: `/qa` 페이지 — 질문 입력 + 답변·근거 verse 렌더링 + TanStack Query 통합
+- **요점**: `/qa` 페이지 — 질문 입력 + 답변·근거 verse 렌더링 (Server Action 직접 호출, 외부 데이터 fetching 라이브러리 미사용)
 - **방향성**:
-  - `app/qa/page.tsx` — middleware 보호된 client component.
-  - TanStack Query 설정 (`app/providers.tsx` 등에 `QueryClientProvider` 주입) 도 본 spec 에 포함.
-  - 질문 textarea + 제출 버튼 → `useMutation` 으로 `POST /api/qa` 호출 → 답변 본문 + 근거 verse 카드 목록 렌더링.
-  - 로딩 스피너, 에러 토스트(또는 인라인 메시지), 빈 입력 가드.
+  - `src/app/qa/page.tsx` — proxy 보호된 RSC. 내부에 질문 폼용 client component 한 개 임포트.
+  - `src/app/qa/QaForm.tsx` (`'use client'`) — `useActionState(askQuestion, initial)` 로 action 호출, `useFormStatus().pending` 으로 로딩 표시.
+  - TanStack Query 등 외부 fetching 라이브러리 도입하지 않음 — Server Action + `useActionState` 만으로 충분. 채팅 히스토리 / 폴링 같은 요구 등장하면 v1.5 에 검토.
+  - 결과 분기: `state.ok === true` → 답변 본문 + verse 카드 목록 렌더링. `state.ok === false` → reason 별 인라인 메시지 (`'rate-limit'` 등).
+  - 빈 입력 가드는 client 측 disabled + action 측 typed `'invalid-input'` 이중 방어.
   - verse 카드는 `book chapter:verse` 라벨 + 영문 텍스트. 클릭 시 펼침/접힘 같은 인터랙션은 v1 이후.
 - **참조**:
-  - spec-03-04 응답 스키마
-  - TanStack Query v5 + Next.js App Router 가이드 (context7)
-- **연관 모듈**: `app/qa/page.tsx`, `app/providers.tsx`, `src/components/AnswerView.tsx`, `src/components/VerseCard.tsx`
+  - spec-03-04 산출물 (`askQuestion`, `AskResult`)
+  - Next.js 공식: `mutating-data.mdx`, `forms.mdx`, `useActionState` / `useFormStatus` API (context7)
+- **연관 모듈**: `src/app/qa/page.tsx`, `src/app/qa/QaForm.tsx`, `src/components/AnswerView.tsx`, `src/components/VerseCard.tsx`
 
 ## 📌 결정 기록 (Review)
 
@@ -118,10 +122,13 @@ Supabase Auth 기반 로그인을 갖춘 Next.js App Router 페이지에서 사�
 
 | 이슈 | 선택지 | 결정 | 이유 |
 |---|---|---|---|
-| 인증 토큰 저장 방식 | Cookie session / Bearer JWT header | **Cookie session (`@supabase/ssr`)** | Server Component / middleware 가 인증 상태를 알아야 하고, refresh 자동화 필요. JWT 자체는 stateless 라 Vercel 멀티 인스턴스 무관. |
-| `/api/search` 처리 | LLM 포함으로 확장 / LLM 없는 검색 전용 유지 | **유지, 신규 `/api/qa` 추가** | phase-02 의 통합 시나리오 (검색 단독) 가 회귀 가능. 책임 분리. |
+| 인증 토큰 저장 방식 | Cookie session / Bearer JWT header | **Cookie session (`@supabase/ssr`)** | Server Component / proxy 가 인증 상태를 알아야 하고, refresh 자동화 필요. JWT 자체는 stateless 라 Vercel 멀티 인스턴스 무관. |
+| `/api/search` 처리 | LLM 포함으로 확장 / LLM 없는 검색 전용 유지 | **유지, 신규 `askQuestion` Server Action 추가** | phase-02 의 통합 시나리오 (검색 단독) 가 회귀 가능. 책임 분리. |
 | UI 라이브러리 | shadcn / Mantine / 자체 | **자체 (Tailwind + 직접 작성)** | v1 범위. 디자인 시스템 도입은 사용자 수 늘기 전엔 ROI 음수. |
 | 소셜 provider 범위 | Google only / Google+GitHub / 다수 | **Google 1 개** | 학습용 MVP. 추가는 v1.5. |
+| QA mutation 스타일 | Route Handler (`/api/qa`) / Server Action (`actions.ts`) | **Server Action** | Next.js 공식 가이드 (`data-security.mdx`, `mutating-data.mdx`) 가 form mutation 에 Server Action 권장. 외부 consumer 없고 RSC 통합 자연스러움. 2026-05-27 phase-03 alignment 중 결정. |
+| 요청 인터셉터 | middleware (deprecated) / proxy | **proxy** | Next.js 16+ 에서 `middleware.ts` → `proxy.ts` rename. 이미 `src/proxy.ts` 채택 상태. nodejs runtime 고정 (edge 미지원) — 본 프로젝트는 Supabase SSR 만 쓰므로 영향 없음. |
+| 클라이언트 fetching 라이브러리 | TanStack Query 도입 / 미도입 | **미도입** | Server Action + `useActionState` 만으로 phase-03 요구 (단발 mutation) 충족. 폴링 / 무한 스크롤 / 채팅 히스토리 등장 시 v1.5 검토. |
 
 ## 🧪 통합 테스트 시나리오 (간결)
 
@@ -133,8 +140,8 @@ Supabase Auth 기반 로그인을 갖춘 Next.js App Router 페이지에서 사�
 - **When**: 신규 이메일로 회원가입 → 메일 확인 → 로그인 → `/qa` 접근 → 로그아웃 → `/qa` 재접근
 - **Then**:
   - 로그인 후 `/qa` 접근 OK
-  - 로그아웃 후 `/qa` 접근 시 `/login` 으로 redirect
-  - 로그아웃 후 `POST /api/qa` 호출 시 **401** (curl 또는 스크립트)
+  - 로그아웃 후 `/qa` 접근 시 `/login` 으로 redirect (proxy 가 차단)
+  - 미인증 상태에서 `askQuestion` Server Action 직접 호출 시 `{ ok: false, reason: 'unauthorized' }` 반환 (unit/integration test)
 - **연관 SPEC**: spec-03-01, spec-03-02
 
 ### 시나리오 2: 엔드투엔드 QA (수동)
@@ -146,16 +153,16 @@ Supabase Auth 기반 로그인을 갖춘 Next.js App Router 페이지에서 사�
   - 근거 verse 카드 3~5건이 영문으로 표시되며 답변 내용과 의미적으로 연결됨
 - **연관 SPEC**: spec-03-03, spec-03-04, spec-03-05
 
-### 시나리오 3: API 스모크 테스트 (자동)
-- **Given**: dev 서버 + 로그인 세션 쿠키
-- **When**: `POST /api/qa` body `{ "question": "천지창조", "k": 5 }`
-- **Then**: 200 응답, body 가 `{ answer: string (non-empty), verses: VerseMatch[] (length 5) }` 구조
+### 시나리오 3: Server Action 스모크 테스트 (자동)
+- **Given**: 로컬 Supabase 세션 (테스트 fixture), Gemini API quota 가용
+- **When**: `pnpm exec tsx scripts/smoke-qa.ts` — `askQuestion` Server Action 을 직접 import 해서 `{ question: '천지창조', k: 5 }` 로 호출
+- **Then**: 결과가 `{ ok: true, answer: string (non-empty), verses: VerseMatch[] (length 5) }` 구조
 - **연관 SPEC**: spec-03-04
 
 ### 통합 테스트 실행
 ```bash
 # 자동 시나리오만
-pnpm test                       # unit (gemini mock, route handler)
+pnpm test                          # unit (gemini mock, action handler)
 pnpm exec tsx scripts/smoke-qa.ts  # 시나리오 3 (별도 작성 예정)
 
 # 수동 시나리오 (사람 손)
@@ -175,19 +182,19 @@ pnpm dev
 
 | 위험 | 영향 | 완화책 |
 |---|---|---|
-| `@supabase/ssr` 권장 패턴이 최근 변경되어 학습 데이터 stale | 잘못된 구조로 구현 → 재작업 | spec-03-01 첫 task 로 context7 공식 문서 직접 조회 후 구조 결정. AGENTS.md 지침 준수. |
+| `@supabase/ssr` + Next.js 16 (proxy 컨벤션) 권장 패턴이 학습 데이터 stale | 잘못된 구조로 구현 → 재작업 | spec-03-04/05 첫 task 로 context7 공식 가이드 직접 조회 후 구조 결정. AGENTS.md 지침 준수. |
 | Gemini Flash API 무료 tier 한도 / 응답 시간 | 데모 중 429 또는 long polling | spec-03-03 wrapper 에서 timeout + backoff. UI 는 로딩 스피너 + "잠시만요" 안내. |
 | 임베딩 진척률이 낮아 (~10%) 답변 품질 편차 | 답변이 "모르겠습니다" 로 자주 끝남 | 시나리오 2 는 임베딩 완료 범위(Genesis·Exodus) 한정 질문으로 검증. UI/플로우 자체는 임베딩과 무관하게 PASS 가능. |
-| 보호 경로가 middleware 만으로 부족 (defence in depth) | API 단에서 인증 우회 | `/api/qa` 안에서 `getUser()` 한 번 더 검증. |
-| TanStack Query + RSC 통합이 처음 도입 | 보일러플레이트 시행착오 | spec-03-05 에서 공식 가이드 (context7) 우선 따라가기. |
+| 보호 경로가 proxy 만으로 부족 (defence in depth) | Server Action 단에서 인증 우회 | `askQuestion` 안에서 `getUser()` 한 번 더 검증. |
+| Server Action + Supabase auth 통합 패턴이 처음 도입 | `useActionState` / `useFormStatus` 패턴 시행착오 | spec-03-04 첫 task 로 공식 가이드 (`mutating-data.mdx`, `forms.mdx`) 조회 후 시그니처 결정. |
 
 ## 🏁 Phase Done 조건
 
-- [ ] 모든 SPEC 이 `phase-03-auth-ui-llm` 로 merge (0/5)
+- [ ] 모든 SPEC 이 `phase-03-auth-ui-llm` 로 merge (2/5 — spec-03-01·02 완료)
 - [ ] `phase-03-auth-ui-llm` 가 `develop` 으로 merge (`/hk-phase-ship` 시)
 - [ ] 시나리오 1 인증 흐름 자동·수동 모두 PASS
 - [ ] 시나리오 2 엔드투엔드 QA 수동 OK (사용자 확인)
-- [ ] 시나리오 3 API 스모크 테스트 PASS
+- [ ] 시나리오 3 Server Action 스모크 테스트 PASS
 - [ ] 사용자 최종 승인
 
 ## 📊 검증 결과 (phase 완료 시 작성)
