@@ -45,9 +45,9 @@
 ## Task 3: 입력 가드 + 인증 분기 TDD
 
 ### 3-1. 테스트 작성 (TDD Red)
-- [ ] 시나리오 2, 3, 4 추가: 빈 입력 / 한도 초과 / API key 누락 → 각각 `'invalid-input'` / `'invalid-input'` / `'auth'`
-- [ ] 실행 → Fail 확인
-- [ ] Commit: `test(spec-03-03): add input guard and auth-missing tests`
+- [x] 시나리오 2, 3, 4 추가: 빈 입력 / 한도 초과 / API key 누락 → 각각 `'invalid-input'` / `'invalid-input'` / `'auth'`
+- [x] 실행 → Fail 확인 (3 failed | 1 passed)
+- [x] Commit: `test(spec-03-03): add input guard and auth-missing tests`
 
 ### 3-2. 구현 (TDD Green)
 - [ ] `generateAnswer` 진입부에 길이 가드 + `GEMINI_API_KEY` 존재 검사 추가
