@@ -78,10 +78,15 @@
 - [x] Commit: `test(spec-03-03): add 429 backoff and timeout tests`
 
 ### 5-2. 구현 (TDD Green)
-- [ ] 재시도 루프 (`for attempt in 0..maxRetries`) + 지수 backoff
-- [ ] `AbortController` + `setTimeout(timeoutMs)` 으로 timeout 처리
-- [ ] 실행 → 5/6/7 PASS, 회귀 없음 (전체 10/10 PASS)
-- [ ] Commit: `feat(spec-03-03): add 429 retry with exponential backoff and timeout guard`
+- [x] 재시도 루프 (`for attempt in 0..maxRetries`) + 지수 backoff
+- [x] `AbortController` + `setTimeout(timeoutMs)` + `Promise.race` 로 timeout 처리
+- [x] 실행 → 5/6/7 PASS, 회귀 없음 (전체 10/10 PASS)
+- [x] Commit: `feat(spec-03-03): add 429 retry/timeout impl and fix SDK mock` (383e857)
+
+> ⚠ 기록: 앞선 TDD green 커밋(3015854/57cb1c9/f1676f4)은 테스트 mock 의
+> `GoogleGenAI` 가 화살표 함수여서 `new` 호출 시 "not a constructor" 로
+> 실제로는 통과하지 못했음. 본 커밋(383e857)에서 mock 을 일반 함수로 고쳐
+> 비로소 10/10 PASS 확인. 5-2 구현과 mock 수정을 한 커밋에 묶었다.
 
 ---
 
@@ -89,15 +94,19 @@
 
 > `/hk-ship` 절차.
 
-- [ ] 코드 품질 점검: `pnpm exec tsc --noEmit` (type check), 린트 (있으면)
-- [ ] 전체 테스트 실행: `pnpm test` → 모두 PASS
-- [ ] (Integration Test Required = no) 통합 테스트 N/A
-- [ ] **walkthrough.md 작성** — 결정 기록 (typed result, systemInstruction 미사용, 재시도 정책), 발견 사항, 이월 항목 (라이브 검증은 03-04 로)
-- [ ] **pr_description.md 작성** — 템플릿 준수
-- [ ] **Ship Commit**: `docs(spec-03-03): ship walkthrough and pr description`
-- [ ] **Push**: `git push -u origin spec-03-03-llm-gemini-client`
-- [ ] **PR 생성**: `gh pr create` (대상 브랜치: `phase-03-auth-ui-llm` — phase base, develop 직접 머지 금지)
-- [ ] **사용자 알림**: 푸시 완료 + PR URL 보고
+- [x] 코드 품질 점검: `tsc --noEmit` 통과(EXIT 0), `eslint src/lib/llm` 무경고(EXIT 0)
+- [x] 전체 테스트 실행: `vitest run src/lib/llm` → 10/10 PASS (EXIT 0)
+- [-] (Integration Test Required = no) 통합 테스트 N/A
+- [x] **walkthrough.md 작성** — 결정 기록 (typed result, systemInstruction 미사용, 재시도 정책), 발견 사항, 이월 항목 (라이브 검증은 03-04 로)
+- [x] **pr_description.md 작성** — 템플릿 준수
+- [x] **Ship Commit**: `docs(spec-03-03): ship walkthrough and pr description`
+- [x] **Push**: `git push -u origin spec-03-03-llm-gemini-client`
+- [x] **PR 생성**: `gh pr create` (대상 브랜치: `phase-03-auth-ui-llm` — phase base, develop 직접 머지 금지)
+- [x] **사용자 알림**: 푸시 완료 + PR URL 보고
+
+> ⚠ Task 1-2 의 `.env.example` 변경은 **에이전트 권한 차단**으로 미반영.
+> 사용자가 직접 4 줄(GEMINI_MODEL/TIMEOUT_MS/MAX_RETRIES/MAX_INPUT_CHARS) 추가 필요.
+> 단, 모두 코드 기본값 존재로 동작에는 영향 없음(문서화 목적).
 
 ---
 
