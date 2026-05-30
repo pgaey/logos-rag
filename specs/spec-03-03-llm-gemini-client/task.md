@@ -59,9 +59,9 @@
 ## Task 4: 에러 분류 (auth/network/unknown) TDD
 
 ### 4-1. 테스트 작성 (TDD Red)
-- [ ] 시나리오 8, 9, 10 추가: mock 이 401 / `fetch failed` / 임의 Error throw → 각각 `'auth'` / `'network'` / `'unknown'`
-- [ ] 실행 → Fail 확인
-- [ ] Commit: `test(spec-03-03): add error classification tests`
+- [x] 시나리오 8, 9, 10 추가: mock 이 401 / `fetch failed` / 임의 Error throw → 각각 `'auth'` / `'network'` / `'unknown'`
+- [x] 실행 → Fail 확인 (3 failed | 4 passed)
+- [x] Commit: `test(spec-03-03): add error classification tests`
 
 ### 4-2. 구현 (TDD Green)
 - [ ] `generateAnswer` 의 catch 블록에 에러 message / status 패턴 매칭 분류 로직 추가 (시크릿 누설 가드 포함)

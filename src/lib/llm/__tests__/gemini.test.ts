@@ -57,3 +57,35 @@ describe('generateAnswer — 입력 가드 & 인증', () => {
     expect(generateContent).not.toHaveBeenCalled()
   })
 })
+
+describe('generateAnswer — 에러 분류 (재시도 안 함)', () => {
+  it('401 / API key invalid 계열 에러는 auth 로 분류한다', async () => {
+    generateContent.mockRejectedValue(new Error('got status: 401 API key not valid'))
+
+    const result = await generateAnswer('유효한 프롬프트')
+
+    expect(result).toMatchObject({ ok: false, reason: 'auth' })
+    expect(generateContent).toHaveBeenCalledTimes(1)
+  })
+
+  it('네트워크 계열 에러(fetch failed)는 network 로 분류한다', async () => {
+    generateContent.mockRejectedValue(new Error('fetch failed'))
+
+    const result = await generateAnswer('유효한 프롬프트')
+
+    expect(result).toMatchObject({ ok: false, reason: 'network' })
+    expect(generateContent).toHaveBeenCalledTimes(1)
+  })
+
+  it('분류 불가 에러는 unknown 으로 분류하고 detail 에 프롬프트를 누설하지 않는다', async () => {
+    generateContent.mockRejectedValue(new Error('완전 예상 밖의 무언가'))
+
+    const result = await generateAnswer('비밀스러운 사용자 질문 본문')
+
+    expect(result).toMatchObject({ ok: false, reason: 'unknown' })
+    expect(generateContent).toHaveBeenCalledTimes(1)
+    if (!result.ok) {
+      expect(result.detail ?? '').not.toContain('비밀스러운 사용자 질문 본문')
+    }
+  })
+})
