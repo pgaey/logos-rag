@@ -36,9 +36,9 @@
 - [x] Commit: `test(spec-03-03): add gemini wrapper happy path test`
 
 ### 2-2. 구현 (TDD Green)
-- [ ] `src/lib/llm/gemini.ts` 생성 — `GenerateAnswerResult` 타입 + 기본 happy path 만 (env 읽기 + SDK 호출 + 결과 반환)
-- [ ] `pnpm test src/lib/llm` → 시나리오 1 PASS
-- [ ] Commit: `feat(spec-03-03): implement generateAnswer happy path`
+- [x] `src/lib/llm/gemini.ts` 생성 — `GenerateAnswerResult` 타입 + 기본 happy path 만 (env 읽기 + SDK 호출 + 결과 반환)
+- [x] `pnpm test src/lib/llm` → 시나리오 1 PASS
+- [x] Commit: `feat(spec-03-03): implement generateAnswer happy path`
 
 ---
 
