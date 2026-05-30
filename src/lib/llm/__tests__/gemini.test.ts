@@ -89,3 +89,49 @@ describe('generateAnswer — 에러 분류 (재시도 안 함)', () => {
     }
   })
 })
+
+describe('generateAnswer — 429 재시도 & timeout', () => {
+  it('429 가 한 번 발생해도 재시도 후 성공하면 ok 를 반환한다', async () => {
+    vi.useFakeTimers()
+    generateContent
+      .mockRejectedValueOnce(new Error('got status: 429 RESOURCE_EXHAUSTED'))
+      .mockResolvedValueOnce({ text: '재시도 후 답변' })
+
+    const promise = generateAnswer('유효한 프롬프트')
+    await vi.runAllTimersAsync()
+    const result = await promise
+
+    expect(result).toEqual({ ok: true, answer: '재시도 후 답변' })
+    expect(generateContent).toHaveBeenCalledTimes(2)
+    vi.useRealTimers()
+  })
+
+  it('429 가 재시도 한도(maxRetries)까지 계속되면 rate-limit 을 반환한다', async () => {
+    vi.useFakeTimers()
+    process.env.GEMINI_MAX_RETRIES = '2'
+    generateContent.mockRejectedValue(new Error('429 quota exceeded'))
+
+    const promise = generateAnswer('유효한 프롬프트')
+    await vi.runAllTimersAsync()
+    const result = await promise
+
+    expect(result).toMatchObject({ ok: false, reason: 'rate-limit' })
+    // 최초 1회 + 재시도 2회 = 3회
+    expect(generateContent).toHaveBeenCalledTimes(3)
+    vi.useRealTimers()
+  })
+
+  it('SDK 응답이 GEMINI_TIMEOUT_MS 를 넘으면 timeout 을 반환한다', async () => {
+    vi.useFakeTimers()
+    process.env.GEMINI_TIMEOUT_MS = '100'
+    // 영원히 미해결 — timeout 타이머만 발화하도록 한다.
+    generateContent.mockReturnValue(new Promise(() => {}))
+
+    const promise = generateAnswer('유효한 프롬프트')
+    await vi.runAllTimersAsync()
+    const result = await promise
+
+    expect(result).toMatchObject({ ok: false, reason: 'timeout' })
+    vi.useRealTimers()
+  })
+})

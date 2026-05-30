@@ -73,9 +73,9 @@
 ## Task 5: 429 백오프 + Timeout TDD
 
 ### 5-1. 테스트 작성 (TDD Red)
-- [ ] 시나리오 5, 6, 7 추가: 429 1회→성공 / 429 N+1회 / timeout (vitest fake timers + AbortController)
-- [ ] 실행 → Fail 확인
-- [ ] Commit: `test(spec-03-03): add 429 backoff and timeout tests`
+- [x] 시나리오 5, 6, 7 추가: 429 1회→성공 / 429 N+1회 / timeout (vitest fake timers)
+- [x] 실행 → Fail 확인 (3 failed | 7 passed)
+- [x] Commit: `test(spec-03-03): add 429 backoff and timeout tests`
 
 ### 5-2. 구현 (TDD Green)
 - [ ] 재시도 루프 (`for attempt in 0..maxRetries`) + 지수 backoff
