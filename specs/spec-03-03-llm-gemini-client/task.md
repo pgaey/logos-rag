@@ -10,20 +10,20 @@
 - [x] plan.md 작성
 - [x] task.md 작성 (이 파일)
 - [x] 백로그 업데이트 (phase-03.md SPEC 표 sdd 자동 갱신)
-- [ ] 사용자 Plan Accept
+- [x] 사용자 Plan Accept
 
 ---
 
 ## Task 1: 브랜치 생성 + 환경변수 셋업
 
 ### 1-1. 브랜치 생성
-- [ ] `git checkout -b spec-03-03-llm-gemini-client` (현재 위치: `phase-03-auth-ui-llm`)
-- [ ] Commit: 없음 (브랜치 생성만)
+- [x] `git checkout -b spec-03-03-llm-gemini-client` (현재 위치: `phase-03-auth-ui-llm`)
+- [x] Commit: 없음 (브랜치 생성만) — 별도로 spec 산출물 commit `22518cd` 선행
 
 ### 1-2. `.env.example` 에 Gemini 변수 4 개 추가
-- [ ] `.env.example` 에 `GEMINI_MODEL`, `GEMINI_TIMEOUT_MS`, `GEMINI_MAX_RETRIES`, `GEMINI_MAX_INPUT_CHARS` 추가 (기본값 포함)
-- [ ] `.env.local` 도 동일하게 보강 (gitignore 대상, 로컬만)
-- [ ] Commit: `chore(spec-03-03): add Gemini wrapper env vars to .env.example`
+- [x] `.env.example` 에 `GEMINI_MODEL`, `GEMINI_TIMEOUT_MS`, `GEMINI_MAX_RETRIES`, `GEMINI_MAX_INPUT_CHARS` 추가 (기본값 포함)
+- [-] `.env.local` 도 동일하게 보강 (gitignore 대상, 로컬만) — Pass: 4 변수 모두 코드 기본값 존재로 불필요 + 시크릿 파일이 redacted 되어 안전 편집 불가. 비기본값 필요 시 사용자가 직접 추가.
+- [x] Commit: `chore(spec-03-03): add Gemini wrapper env vars to .env.example`
 
 ---
 
