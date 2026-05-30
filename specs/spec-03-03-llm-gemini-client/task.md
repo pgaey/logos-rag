@@ -50,9 +50,9 @@
 - [x] Commit: `test(spec-03-03): add input guard and auth-missing tests`
 
 ### 3-2. 구현 (TDD Green)
-- [ ] `generateAnswer` 진입부에 길이 가드 + `GEMINI_API_KEY` 존재 검사 추가
-- [ ] 실행 → 2/3/4 PASS, 1 회귀 없음 확인
-- [ ] Commit: `feat(spec-03-03): add input guard and missing-api-key handling`
+- [x] `generateAnswer` 진입부에 길이 가드 + `GEMINI_API_KEY` 존재 검사 추가
+- [x] 실행 → 2/3/4 PASS, 1 회귀 없음 확인 (4/4)
+- [x] Commit: `feat(spec-03-03): add input guard and missing-api-key handling`
 
 ---
 
