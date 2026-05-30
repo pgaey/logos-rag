@@ -4,8 +4,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // vi.hoisted 로 mock 함수를 끌어올려 vi.mock 팩토리에서 안전하게 참조한다.
 const generateContent = vi.hoisted(() => vi.fn())
 
+// 화살표 함수는 `new` 로 호출할 수 없어 일반 함수로 둔다 (vitest 4: "not a constructor").
 vi.mock('@google/genai', () => ({
-  GoogleGenAI: vi.fn(() => ({ models: { generateContent } })),
+  GoogleGenAI: vi.fn(function () {
+    return { models: { generateContent } }
+  }),
 }))
 
 import { generateAnswer } from '../gemini'
