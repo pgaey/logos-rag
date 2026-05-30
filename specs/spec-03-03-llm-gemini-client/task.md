@@ -30,10 +30,10 @@
 ## Task 2: Happy Path TDD
 
 ### 2-1. 테스트 작성 (TDD Red)
-- [ ] `src/lib/llm/__tests__/gemini.test.ts` 생성 — `vi.mock('@google/genai', ...)` 셋업
-- [ ] 시나리오 1 (happy): mock 이 `{ text: '한국어 답변' }` 반환 시 `{ ok: true, answer: '한국어 답변' }` 기대
-- [ ] `pnpm test src/lib/llm` → import 실패 또는 단언 실패로 Fail 확인
-- [ ] Commit: `test(spec-03-03): add gemini wrapper happy path test`
+- [x] `src/lib/llm/__tests__/gemini.test.ts` 생성 — `vi.mock('@google/genai', ...)` 셋업
+- [x] 시나리오 1 (happy): mock 이 `{ text: '한국어 답변' }` 반환 시 `{ ok: true, answer: '한국어 답변' }` 기대
+- [x] `pnpm test src/lib/llm` → import 실패로 Fail 확인 (`Failed to load url ../gemini`)
+- [x] Commit: `test(spec-03-03): add gemini wrapper happy path test`
 
 ### 2-2. 구현 (TDD Green)
 - [ ] `src/lib/llm/gemini.ts` 생성 — `GenerateAnswerResult` 타입 + 기본 happy path 만 (env 읽기 + SDK 호출 + 결과 반환)
