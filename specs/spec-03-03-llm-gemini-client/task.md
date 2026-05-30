@@ -64,9 +64,9 @@
 - [x] Commit: `test(spec-03-03): add error classification tests`
 
 ### 4-2. 구현 (TDD Green)
-- [ ] `generateAnswer` 의 catch 블록에 에러 message / status 패턴 매칭 분류 로직 추가 (시크릿 누설 가드 포함)
-- [ ] 실행 → 8/9/10 PASS, 회귀 없음
-- [ ] Commit: `feat(spec-03-03): classify gemini errors into typed result`
+- [x] `generateAnswer` 의 catch 블록에 에러 message / status 패턴 매칭 분류 로직 추가 (시크릿 누설 가드 포함)
+- [x] 실행 → 8/9/10 PASS, 회귀 없음 (7/7)
+- [x] Commit: `feat(spec-03-03): classify gemini errors into typed result`
 
 ---
 
