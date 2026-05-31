@@ -45,8 +45,11 @@ function extractStatus(err: unknown): number | undefined {
 /**
  * 에러 메시지/상태코드를 ErrorReason 으로 분류한다.
  * SDK 가 typed error 를 보장하지 않으므로 문자열 패턴 fallback 을 함께 둔다.
+ *
+ * spec-03-04: searchVerses(동일 GoogleGenAI SDK 로 임베딩) 의 throw 도
+ * 같은 형태이므로 askQuestion 이 이 분류기를 재사용한다. export 추가.
  */
-function classifyError(err: unknown): { reason: ErrorReason; detail?: string } {
+export function classifyError(err: unknown): { reason: ErrorReason; detail?: string } {
   const status = extractStatus(err)
   const msg = (err instanceof Error ? err.message : String(err)).toLowerCase()
 
