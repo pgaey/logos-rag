@@ -30,14 +30,14 @@
 ## Task 2: requireUser 가드 TDD
 
 ### 2-1. 테스트 작성 (TDD Red)
-- [ ] `src/lib/auth/__tests__/guard.test.ts` — `createClient` mock. getClaims→claims면 claims 반환, 없으면 null
-- [ ] `pnpm test src/lib/auth` → Fail 확인
-- [ ] Commit: `test(spec-03-04): add requireUser guard tests`
+- [x] `src/lib/auth/__tests__/guard.test.ts` — `createClient` mock. getClaims→claims면 claims 반환, 없으면 null (3 시나리오)
+- [x] `pnpm test src/lib/auth` → Fail 확인 (Failed to load ../guard)
+- [x] Commit: `test(spec-03-04): add requireUser guard tests`
 
 ### 2-2. 구현 (TDD Green)
-- [ ] `src/lib/auth/guard.ts` — `requireUser()` (createClient → getClaims → data?.claims ?? null)
-- [ ] `pnpm test src/lib/auth` → PASS
-- [ ] Commit: `feat(spec-03-04): add requireUser auth guard helper`
+- [x] `src/lib/auth/guard.ts` — `requireUser()` (createClient → getClaims → data?.claims ?? null)
+- [x] `pnpm test src/lib/auth` → PASS (3/3)
+- [x] Commit: `feat(spec-03-04): add requireUser auth guard helper`
 
 ---
 
