@@ -44,9 +44,9 @@
 ## Task 3: classifyError export
 
 ### 3-1. gemini.ts에서 classifyError 노출
-- [ ] `src/lib/llm/gemini.ts` 의 `classifyError` 에 `export` 추가
-- [ ] `pnpm test src/lib/llm` → 회귀 없음(기존 10 PASS 유지)
-- [ ] Commit: `refactor(spec-03-04): export classifyError for reuse in askQuestion`
+- [x] `src/lib/llm/gemini.ts` 의 `classifyError` 에 `export` 추가
+- [x] `pnpm test src/lib/llm` → 회귀 없음(기존 10 PASS 유지)
+- [x] Commit: `refactor(spec-03-04): export classifyError for reuse in askQuestion`
 
 ---
 
