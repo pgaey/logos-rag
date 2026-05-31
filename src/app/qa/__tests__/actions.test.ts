@@ -74,3 +74,59 @@ describe('askQuestion — 인증 & 입력 검증', () => {
     expect(searchVerses).toHaveBeenCalledWith('질문', 10)
   })
 })
+
+describe('askQuestion — 에러 매핑 & 빈 결과', () => {
+  it('searchVerses 가 429/quota 로 throw 하면 rate-limit (classifyError 실제 분류)', async () => {
+    searchVerses.mockRejectedValue(new Error('searchVerses RPC error: 429 quota exceeded'))
+
+    const result = await askQuestion({ question: '질문' })
+
+    expect(result).toEqual({ ok: false, reason: 'rate-limit' })
+    expect(generateAnswer).not.toHaveBeenCalled()
+  })
+
+  it('searchVerses 가 기타 에러로 throw 하면 unknown', async () => {
+    searchVerses.mockRejectedValue(new Error('something unexpected'))
+
+    const result = await askQuestion({ question: '질문' })
+
+    expect(result).toEqual({ ok: false, reason: 'unknown' })
+    expect(generateAnswer).not.toHaveBeenCalled()
+  })
+
+  it('generateAnswer rate-limit → rate-limit', async () => {
+    searchVerses.mockResolvedValue(sampleVerses)
+    generateAnswer.mockResolvedValue({ ok: false, reason: 'rate-limit' })
+
+    const result = await askQuestion({ question: '질문' })
+
+    expect(result).toEqual({ ok: false, reason: 'rate-limit' })
+  })
+
+  it('generateAnswer timeout → timeout (사용자 재시도 가능하므로 별도)', async () => {
+    searchVerses.mockResolvedValue(sampleVerses)
+    generateAnswer.mockResolvedValue({ ok: false, reason: 'timeout' })
+
+    const result = await askQuestion({ question: '질문' })
+
+    expect(result).toEqual({ ok: false, reason: 'timeout' })
+  })
+
+  it('generateAnswer auth(서버 설정 문제) → unknown (화면엔 일시 오류)', async () => {
+    searchVerses.mockResolvedValue(sampleVerses)
+    generateAnswer.mockResolvedValue({ ok: false, reason: 'auth', detail: 'no key' })
+
+    const result = await askQuestion({ question: '질문' })
+
+    expect(result).toEqual({ ok: false, reason: 'unknown' })
+  })
+
+  it('verses 0건이어도 정상 ok (buildPrompt 가 처리)', async () => {
+    searchVerses.mockResolvedValue([])
+    generateAnswer.mockResolvedValue({ ok: true, answer: '근거가 부족합니다' })
+
+    const result = await askQuestion({ question: '질문' })
+
+    expect(result).toEqual({ ok: true, answer: '근거가 부족합니다', verses: [] })
+  })
+})
