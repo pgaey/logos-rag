@@ -33,11 +33,19 @@ export type AskResult =
 
 // 입력 스키마. question 은 검색 쿼리로 충분한 길이(1000자)만 가드하고,
 // 최종 프롬프트 길이(30k) 한도는 generateAnswer 에 위임한다(이중 가드 금지).
-// k 는 /api/search 와 동일하게 1~10 으로 클램프(기본 5).
+// k 는 여기서 검증하지 않는다 — zod .max() 는 거부(reject)라 큰 값이 invalid-input
+// 이 되어버린다. /api/search 와 동일하게 "거부"가 아니라 1~10 "클램프"가 의도이므로
+// 아래에서 clampK 로 잘라낸다.
 const InputSchema = z.object({
   question: z.string().trim().min(1).max(1000),
-  k: z.number().int().min(1).max(10).optional().default(5),
 })
+
+const DEFAULT_K = 5
+// k 를 1~10 으로 잘라낸다(/api/search 와 동일). 미지정/비정상이면 기본 5.
+function clampK(k: number | undefined): number {
+  if (typeof k !== 'number' || !Number.isFinite(k)) return DEFAULT_K
+  return Math.min(Math.max(1, Math.floor(k)), 10)
+}
 
 export async function askQuestion(input: {
   question: string
@@ -49,12 +57,13 @@ export async function askQuestion(input: {
     return { ok: false, reason: 'unauthorized' }
   }
 
-  // 2. 입력 검증. 빈 문자열·과길이·잘못된 k → invalid-input.
+  // 2. 입력 검증. question 빈 문자열·과길이 → invalid-input. k 는 거부가 아니라 클램프.
   const parsed = InputSchema.safeParse(input)
   if (!parsed.success) {
     return { ok: false, reason: 'invalid-input' }
   }
-  const { question, k } = parsed.data
+  const { question } = parsed.data
+  const k = clampK(input.k)
 
   // 3. 검색. searchVerses 는 실패 시 throw 하므로 try/catch 로 감싸,
   //    generateAnswer 와 동일한 classifyError 로 분류한다(임베딩도 같은 SDK).

@@ -43,6 +43,10 @@ askQuestion 11 시나리오: 정상 / 미인증 / 빈 질문 / 과길이 / k 클
 
 ## ⚠ 발견 사항 / 이월 (Findings / Carry-over)
 
+- **k 클램프 버그(해소)**: 처음 zod `.max(10)` 으로 k 를 검증했으나, zod max 는 *거부(reject)* 라 k=99 가 invalid-input 이 되어버렸다. 의도는 `/api/search` 와 동일한 *클램프(1~10 잘라냄)* 이므로 zod 에서 k 를 빼고 `clampK()` 로 처리. 테스트가 잡음.
+- **커밋 유실 사고(해소)**: Task 3 커밋(c59c0a4)이 task.md 만 담고 gemini.ts 의 `classifyError` export 가 누락되어 한때 빌드가 깨진 채 push/PR 됨(tsc TS2459, qa 3 fail). 후속 커밋(2adbaff)에서 export 복구 + 누락된 spec.md/plan.md 동시 커밋. 최종 27/27 PASS, tsc clean 확인 후 정상화.
+
+
 - **라이브 검증 미수행(의도)**: 실제 Supabase 세션·Gemini 호출은 phase 통합 시나리오 3(smoke-qa.ts)에서. 본 spec은 mock-only.
 - **`searchVerses` 반환 non-null 확인**: 검수가 우려한 nullable 가드는 불필요(`Promise<VerseMatch[]>`, RPC error 없으면 non-null). 별도 `?? []` 가드 안 넣음.
 - **다음(spec-03-05)**: `/qa` 화면이 `askQuestion`을 어떻게 호출할지(useActionState form vs 직접 호출)는 03-05에서 결정. `askQuestion(input)` 단일 인자라 양쪽 다 래핑 가능.
