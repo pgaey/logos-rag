@@ -56,18 +56,34 @@ export async function askQuestion(input: {
   }
   const { question, k } = parsed.data
 
-  // 3. 검색 (다음 task 에서 try/catch + 에러 분류 추가). 지금은 정상 경로만.
-  const verses = await searchVerses(question, k)
+  // 3. 검색. searchVerses 는 실패 시 throw 하므로 try/catch 로 감싸,
+  //    generateAnswer 와 동일한 classifyError 로 분류한다(임베딩도 같은 SDK).
+  //    검색 단계 429 가 'unknown' 으로 뭉개지지 않도록 rate-limit 만 보존.
+  let verses: VerseMatch[]
+  try {
+    verses = await searchVerses(question, k)
+  } catch (err) {
+    const { reason } = classifyError(err)
+    return { ok: false, reason: reason === 'rate-limit' ? 'rate-limit' : 'unknown' }
+  }
 
   // 4. 프롬프트 조립 (phase-02). verses 가 0건이어도 buildPrompt 가 처리.
   const prompt = buildPrompt(question, verses)
 
-  // 5. LLM 호출 (spec-03-03). reason 매핑은 다음 task 에서 확장.
+  // 5. LLM 호출 (spec-03-03) → AskResult 매핑.
   const result = await generateAnswer(prompt)
   if (result.ok) {
     return { ok: true, answer: result.answer, verses }
   }
 
-  // 임시: 실패는 일단 unknown (Task 5 에서 reason 별 매핑으로 교체)
+  // generateAnswer 6종 reason → AskResult 5종 매핑.
+  // - rate-limit / timeout: 사용자가 행동 가능(기다리거나 재시도)하므로 보존.
+  // - auth(서버 설정)·network·invalid-input(프롬프트 과길이)·unknown: 사용자가
+  //   할 수 있는 게 없는 "일시적 서버 오류"라 화면엔 unknown 으로 접되,
+  //   원인 분류는 서버 로그로 남긴다(시크릿/프롬프트 본문은 미포함).
+  if (result.reason === 'rate-limit') return { ok: false, reason: 'rate-limit' }
+  if (result.reason === 'timeout') return { ok: false, reason: 'timeout' }
+
+  console.error('[askQuestion] generateAnswer failed:', result.reason, result.detail ?? '')
   return { ok: false, reason: 'unknown' }
 }

@@ -68,14 +68,14 @@
 ## Task 5: 에러 매핑 TDD
 
 ### 5-1. 테스트 작성 (TDD Red)
-- [ ] 시나리오 6~11 추가: search throw(429/기타), generate rate-limit/timeout/auth, verses 0건
-- [ ] `pnpm test src/app/qa` → Fail 확인
-- [ ] Commit: `test(spec-03-04): add error mapping and empty-result tests`
+- [x] 시나리오 6~11 추가: search throw(429/기타), generate rate-limit/timeout/auth, verses 0건
+- [x] `pnpm test src/app/qa` → Fail 확인 (3 failed | 8 passed)
+- [x] Commit: `test(spec-03-04): add error mapping and empty-result tests`
 
 ### 5-2. 구현 (TDD Green)
-- [ ] searchVerses try/catch에 `classifyError` 적용, generateAnswer reason 매핑(timeout 별도, auth/network/invalid-input/unknown→unknown + detail 로그)
-- [ ] `pnpm test src/app/qa` → 전체 PASS, 회귀 없음
-- [ ] Commit: `feat(spec-03-04): map search and llm errors to AskResult`
+- [x] searchVerses try/catch에 `classifyError` 적용, generateAnswer reason 매핑(timeout 별도, auth/network/invalid-input/unknown→unknown + detail 로그)
+- [x] `pnpm test src/app/qa` → 전체 11/11 PASS, 회귀 없음
+- [x] Commit: `feat(spec-03-04): map search and llm errors to AskResult`
 
 ---
 
