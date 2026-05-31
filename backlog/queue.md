@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-03** — 인증 · UI · LLM 통합 (auth-ui-llm) — 3 spec — 다음: spec-03-03-llm-gemini-client
+- **phase-03** — 인증 · UI · LLM 통합 (auth-ui-llm) — 4 spec — 다음: spec-03-04-qa-server-action
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
