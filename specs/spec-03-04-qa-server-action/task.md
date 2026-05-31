@@ -53,15 +53,15 @@
 ## Task 4: askQuestion 인증·입력검증 TDD
 
 ### 4-1. 테스트 작성 (TDD Red)
-- [ ] `src/app/qa/__tests__/actions.test.ts` — guard/search/llm 모듈 mock 셋업
-- [ ] 시나리오 1(정상), 2(미인증), 3(빈 질문), 4(과길이), 5(k 클램프) 작성
-- [ ] `pnpm test src/app/qa` → Fail 확인
-- [ ] Commit: `test(spec-03-04): add askQuestion auth and input-validation tests`
+- [x] `src/app/qa/__tests__/actions.test.ts` — guard/search/llm 모듈 mock 셋업 (classifyError는 실제 사용)
+- [x] 시나리오 1(정상), 2(미인증), 3(빈 질문), 4(과길이), 5(k 클램프) 작성
+- [x] `pnpm test src/app/qa` → Fail 확인 (Failed to load ../actions)
+- [x] Commit: `test(spec-03-04): add askQuestion auth and input-validation tests`
 
 ### 4-2. 구현 (TDD Green)
-- [ ] `src/app/qa/actions.ts` (+ 필요시 `types.ts`) — requireUser → zod parse → searchVerses → buildPrompt → generateAnswer 골격 + 정상/unauthorized/invalid-input/k클램프 경로
-- [ ] `pnpm test src/app/qa` → 1~5 PASS
-- [ ] Commit: `feat(spec-03-04): implement askQuestion happy path with auth and zod`
+- [x] `src/app/qa/actions.ts` — AskResult 동일 파일 export + requireUser → zod parse → searchVerses → buildPrompt → generateAnswer 골격 + 정상/unauthorized/invalid-input/k클램프 경로
+- [x] `pnpm test src/app/qa` → 1~5 PASS
+- [x] Commit: `feat(spec-03-04): implement askQuestion happy path with auth and zod`
 
 ---
 
