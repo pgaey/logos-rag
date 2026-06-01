@@ -30,23 +30,23 @@
 ## Task 2: 시크릿/서버전용 lib 모듈에 server-only 선언
 
 ### 2-1. 5개 파일 상단에 `import 'server-only'` 추가
-- [ ] `src/lib/supabase/admin.ts` (SECRET — 최우선)
-- [ ] `src/lib/llm/gemini.ts` (GEMINI_API_KEY)
-- [ ] `src/lib/search/cosine.ts`
-- [ ] `src/lib/auth/guard.ts`
-- [ ] `src/lib/supabase/server.ts`
-- [ ] **`client.ts` 는 건드리지 않음** (브라우저 클라이언트)
-- [ ] `pnpm exec tsc --noEmit` + `pnpm test` → 통과
-- [ ] Commit: `refactor(spec-03-06): enforce server-only boundary on secret-handling lib modules`
+- [x] `src/lib/supabase/admin.ts` (SECRET — 최우선)
+- [x] `src/lib/llm/gemini.ts` (GEMINI_API_KEY)
+- [x] `src/lib/search/cosine.ts`
+- [x] `src/lib/auth/guard.ts`
+- [x] `src/lib/supabase/server.ts`
+- [x] **`client.ts` 는 건드리지 않음** (브라우저 클라이언트)
+- [x] `pnpm exec tsc --noEmit` + `pnpm test` → 통과 (vitest server-only→empty alias 추가로 27/27 복구)
+- [x] Commit: `refactor(spec-03-06): enforce server-only boundary on secret-handling lib modules`
 
 ---
 
 ## Task 3: 인증 주석 교정
 
 ### 3-1. actions.ts 주석 수정
-- [ ] `src/app/qa/actions.ts` 인증 주석을 "Server Action = 권위 게이트(Next.js 공식), proxy=UX"로 교정 (Next.js 공식 문구 인용)
-- [ ] `pnpm exec tsc --noEmit` → 통과 (코드 변화 없음, 주석만)
-- [ ] Commit: `docs(spec-03-06): correct auth comment — server action is authoritative gate`
+- [x] `src/app/qa/actions.ts` 인증 주석을 "Server Action = 권위 게이트(Next.js 공식), proxy=UX"로 교정 (Next.js 공식 문구 인용)
+- [x] `pnpm exec tsc --noEmit` → 통과 (코드 변화 없음, 주석만)
+- [x] Commit: `docs(spec-03-06): correct auth comment — server action is authoritative gate`
 
 ---
 

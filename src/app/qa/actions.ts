@@ -51,7 +51,11 @@ export async function askQuestion(input: {
   question: string
   k?: number
 }): Promise<AskResult> {
-  // 1. 인증 게이트 (보조). proxy 가 주 게이트지만, 직접 import 호출 대비 한 번 더 확인.
+  // 1. 인증 — Server Action 은 그 자체로 공개 HTTP 진입점이라, 자체 인증이
+  //    "권위 있는 게이트"다. (Next.js 공식: "each Server Action is a separate
+  //    entry point and must re-verify the caller's authentication independently")
+  //    proxy / 페이지 redirect 는 보안 책임이 아니라 UX(로그인 유도)일 뿐.
+  //    requireUser 는 인증을 모은 DAL(lib/auth) 레이어 — 모든 action 이 위임한다.
   const user = await requireUser()
   if (!user) {
     return { ok: false, reason: 'unauthorized' }
