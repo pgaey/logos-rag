@@ -1,3 +1,4 @@
+import 'server-only'
 import { GoogleGenAI } from '@google/genai'
 import { createServerSupabase } from '@/lib/supabase/admin'
 import type { Database } from '@/lib/db/types'
