@@ -25,9 +25,9 @@
 ## Task 2: reason→메시지 매핑 TDD
 
 ### 2-1. 테스트 작성 (TDD Red)
-- [ ] `src/app/qa/__tests__/messages.test.ts` — 5종 reason 각각 비어있지 않은 한국어 메시지 반환 + 알 수 없는 값 fallback
-- [ ] `pnpm test src/app/qa` → Fail 확인
-- [ ] Commit: `test(spec-03-05): add reason-to-message mapping tests`
+- [x] `src/app/qa/__tests__/messages.test.ts` — 5종 reason 각각 비어있지 않은 한국어 메시지 반환 + 알 수 없는 값 fallback
+- [x] `pnpm test src/app/qa` → Fail 확인 (`Cannot find module '../messages'`)
+- [x] Commit: `test(spec-03-05): add reason-to-message mapping tests`
 
 ### 2-2. 구현 (TDD Green)
 - [ ] `src/app/qa/messages.ts` — `messageForReason(reason)` 순수 함수
