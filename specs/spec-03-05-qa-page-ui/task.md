@@ -58,12 +58,12 @@
 
 > `/hk-ship` 절차.
 
-- [ ] 코드 품질: `pnpm exec tsc --noEmit`, `eslint src/app/qa`
-- [ ] 전체 테스트: `pnpm test` → 모두 PASS
-- [ ] (Integration Test Required = no) 통합 테스트 N/A — 수동 검증은 phase 통합 시나리오 2
-- [ ] **walkthrough.md 작성** — 결정 기록(useState+useTransition 채택, 메시지 분리, 인증 가드 재사용), 발견, 이월
-- [ ] **pr_description.md 작성** — 템플릿 준수
-- [ ] **Ship Commit**: `docs(spec-03-05): ship walkthrough and pr description`
+- [x] 코드 품질: `pnpm exec tsc --noEmit` 통과 (eslint 미설치로 skip)
+- [x] 전체 테스트: `pnpm test` → 34/34 PASS
+- [x] (Integration Test Required = no) 통합 테스트 N/A — 수동 검증은 phase 통합 시나리오 2
+- [x] **walkthrough.md 작성** — 결정 기록(useState+useTransition 채택, 메시지 분리, 인증 가드 재사용), 발견, 이월
+- [x] **pr_description.md 작성** — 템플릿 준수
+- [x] **Ship Commit**: `docs(spec-03-05): ship walkthrough and pr description`
 - [ ] **Push**: `git push -u origin spec-03-05-qa-page-ui`
 - [ ] **PR 생성**: `gh pr create` (대상: `phase-03-auth-ui-llm`)
 - [ ] **사용자 알림**: 푸시 완료 + PR URL 보고
