@@ -43,7 +43,9 @@ Supabase Auth 기반 로그인을 갖춘 Next.js App Router 페이지에서 사�
 | `spec-03-01` | supabase-auth-setup | P0 | Merged | `specs/spec-03-01-supabase-auth-setup/` |
 | `spec-03-02` | auth-ui-pages | P? | Merged | `specs/spec-03-02-auth-ui-pages/` |
 | `spec-03-03` | llm-gemini-client | P? | Merged | `specs/spec-03-03-llm-gemini-client/` |
-| `spec-03-04` | qa-server-action | P? | Active | `specs/spec-03-04-qa-server-action/` |
+| `spec-03-04` | qa-server-action | P? | Merged | `specs/spec-03-04-qa-server-action/` |
+| `spec-03-05` | qa-page-ui | P? | Active | `specs/spec-03-05-qa-page-ui/` |
+| `spec-03-06` | server-only-boundary | P? | Active | `specs/spec-03-06-server-only-boundary/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`
