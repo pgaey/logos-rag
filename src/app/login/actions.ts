@@ -38,7 +38,7 @@ export async function authAction(
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return { error: error.message, info: null };
     revalidatePath("/", "layout");
-    redirect("/");
+    redirect("/qa");
   } else {
     const { error } = await supabase.auth.signUp({
       email,
