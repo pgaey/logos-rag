@@ -64,9 +64,9 @@
 - [x] **walkthrough.md 작성** — 결정 기록(useState+useTransition 채택, 메시지 분리, 인증 가드 재사용), 발견, 이월
 - [x] **pr_description.md 작성** — 템플릿 준수
 - [x] **Ship Commit**: `docs(spec-03-05): ship walkthrough and pr description`
-- [ ] **Push**: `git push -u origin spec-03-05-qa-page-ui`
-- [ ] **PR 생성**: `gh pr create` (대상: `phase-03-auth-ui-llm`)
-- [ ] **사용자 알림**: 푸시 완료 + PR URL 보고
+- [x] **Push**: `git push -u origin spec-03-05-qa-page-ui`
+- [x] **PR 생성**: PR #19 (대상: `phase-03-auth-ui-llm`) — https://github.com/pgaey/logos-rag/pull/19
+- [x] **사용자 알림**: 푸시 완료 + PR URL 보고
 
 ---
 
