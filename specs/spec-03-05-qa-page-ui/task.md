@@ -30,9 +30,9 @@
 - [x] Commit: `test(spec-03-05): add reason-to-message mapping tests`
 
 ### 2-2. 구현 (TDD Green)
-- [ ] `src/app/qa/messages.ts` — `messageForReason(reason)` 순수 함수
-- [ ] `pnpm test src/app/qa` → PASS
-- [ ] Commit: `feat(spec-03-05): add reason-to-message mapping`
+- [x] `src/app/qa/messages.ts` — `messageForReason(reason)` 순수 함수
+- [x] `pnpm test src/app/qa` → PASS (18 passed: actions 11 + messages 7)
+- [x] Commit: `feat(spec-03-05): add reason-to-message mapping`
 
 ---
 
