@@ -134,6 +134,8 @@ Supabase Auth 기반 로그인을 갖춘 Next.js App Router 페이지에서 사�
 | QA mutation 스타일 | Route Handler (`/api/qa`) / Server Action (`actions.ts`) | **Server Action** | Next.js 공식 가이드 (`data-security.mdx`, `mutating-data.mdx`) 가 form mutation 에 Server Action 권장. 외부 consumer 없고 RSC 통합 자연스러움. 2026-05-27 phase-03 alignment 중 결정. |
 | 요청 인터셉터 | middleware (deprecated) / proxy | **proxy** | Next.js 16+ 에서 `middleware.ts` → `proxy.ts` rename. 이미 `src/proxy.ts` 채택 상태. nodejs runtime 고정 (edge 미지원) — 본 프로젝트는 Supabase SSR 만 쓰므로 영향 없음. |
 | 클라이언트 fetching 라이브러리 | TanStack Query 도입 / 미도입 | **미도입** | Server Action + `useActionState` 만으로 phase-03 요구 (단발 mutation) 충족. 폴링 / 무한 스크롤 / 채팅 히스토리 등장 시 v1.5 검토. |
+| 로그인 후 진입 동선 | `/` 보일러플레이트 유지 / `/qa` 직행 | **`/` 제거 후 진입 라우터화 (로그인→`/qa`, 미로그인→`/login`)** | 화면이 login·qa 둘뿐인 MVP 에 보일러플레이트 랜딩은 무의미. Phase FF (`9a66f80`). 페이지 증가 시 실제 랜딩 재검토. |
+| 시나리오 3 자동 스모크 | `scripts/smoke-qa.ts` 작성 / 수동 대체 | **수동 검증 대체** | 사용자가 e2e(시나리오 2)를 직접 확인했고, 자동 스모크는 임베딩 미적재·Gemini quota 제약으로 신뢰도 낮음. 스크립트는 Icebox(테스트 인프라 Phase 후보)로 이연. |
 
 ## 🧪 통합 테스트 시나리오 (간결)
 
@@ -195,13 +197,38 @@ pnpm dev
 
 ## 🏁 Phase Done 조건
 
-- [ ] 모든 SPEC 이 `phase-03-auth-ui-llm` 로 merge (2/5 — spec-03-01·02 완료)
-- [ ] `phase-03-auth-ui-llm` 가 `develop` 으로 merge (`/hk-phase-ship` 시)
-- [ ] 시나리오 1 인증 흐름 자동·수동 모두 PASS
-- [ ] 시나리오 2 엔드투엔드 QA 수동 OK (사용자 확인)
-- [ ] 시나리오 3 Server Action 스모크 테스트 PASS
-- [ ] 사용자 최종 승인
+- [x] 모든 SPEC 이 `phase-03-auth-ui-llm` 로 merge (6/6 — spec-03-01~06 전부 Merged)
+- [ ] `phase-03-auth-ui-llm` 가 `develop` 으로 merge (`/hk-phase-ship` Phase PR #20 머지 시)
+- [x] 시나리오 1 인증 흐름 자동·수동 모두 PASS (`actions.test` unauthorized + 사용자 수동)
+- [x] 시나리오 2 엔드투엔드 QA 수동 OK (사용자 확인 — "머지하고 확인도 했어")
+- [-] 시나리오 3 Server Action 스모크 테스트 — **수동 검증 대체** (`scripts/smoke-qa.ts` 미구현, 시나리오 2로 갈음 → Icebox)
+- [x] 사용자 최종 승인 (Phase Ship go/no-go: y)
 
 ## 📊 검증 결과 (phase 완료 시 작성)
 
-<!-- 통합 테스트 로그, 성공 기준 측정값, 회귀 점검 결과 등을 여기 첨부 -->
+> 작성: 2026-06-02, Phase Ship (`/hk-phase-ship`) 시점.
+
+### 성공 기준
+| # | 기준 | 결과 | 증거 |
+|:---:|---|:---:|---|
+| 1 | 회원가입→로그인→보호경로→로그아웃 수동 PASS | ✅ | 사용자 수동 확인 (로그인→`/qa` 동선) |
+| 2 | 미인증 `/qa`→`/login` redirect + `askQuestion`→unauthorized | ✅ | `proxy.ts` 코드 + `actions.test.ts` 자동 통과 |
+| 3 | `askQuestion` 5~15초/`{answer,verses}` 구조 (스모크) | ⚠ 부분 | 자동 스모크 미구현 → 시나리오 2 수동 대체 |
+| 4 | UI 답변 본문 + 근거 verse 카드 동시 표시 | ✅ | 사용자 수동 확인 |
+| 5 | `gemini.ts` unit test PASS | ✅ | `pnpm test` 34/34 통과에 포함 |
+
+### 통합 테스트
+| # | 시나리오 | 결과 | 증거 |
+|:---:|---|:---:|---|
+| 1 | 인증 흐름 | ✅ PASS | `actions.test` unauthorized 자동 + 사용자 수동 |
+| 2 | 엔드투엔드 QA | ✅ PASS | 사용자 e2e 확인 |
+| 3 | Server Action 스모크 (자동) | ⚠ 수동 대체 | `scripts/smoke-qa.ts` 미구현 → Icebox |
+
+### 회귀 / 정적 검사
+- `pnpm test`: **34/34 PASS** (5 files)
+- `pnpm exec tsc --noEmit`: clean
+- eslint: 미설치(skip)
+
+### 알려진 제약
+- 임베딩 8,930/31,102 — 답변 "품질"은 적재 범위 의존 (플로우는 검증됨). 매일 FF 적재 중.
+- 자동 e2e/스모크 부재 — 테스트 인프라(Playwright/jsdom/smoke) 별도 Phase 후보로 Icebox 기록.
