@@ -48,9 +48,9 @@
 ## Task 4: /qa 페이지 (RSC + 인증 가드)
 
 ### 4-1. 구현
-- [ ] `src/app/qa/page.tsx` — requireUser → null이면 redirect('/login') + QaForm 렌더 + 헤더/레이아웃
-- [ ] `pnpm exec tsc --noEmit` → 통과
-- [ ] Commit: `feat(spec-03-05): add /qa page with auth guard`
+- [x] `src/app/qa/page.tsx` — requireUser → null이면 redirect('/login') + QaForm 렌더 (헤더/레이아웃은 layout.tsx 전역 제공)
+- [x] `pnpm exec tsc --noEmit` → 통과
+- [x] Commit: `feat(spec-03-05): add /qa page with auth guard`
 
 ---
 
