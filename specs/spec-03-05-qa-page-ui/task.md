@@ -39,9 +39,9 @@
 ## Task 3: QaForm client 컴포넌트
 
 ### 3-1. 구현
-- [ ] `src/app/qa/QaForm.tsx` (`'use client'`) — textarea + useTransition으로 askQuestion 직접 호출 + 5종 분기 렌더(답변/verse 카드/메시지) + 로딩·빈입력 가드
-- [ ] `pnpm exec tsc --noEmit` → 타입 통과 (회귀 없음)
-- [ ] Commit: `feat(spec-03-05): add QaForm client component`
+- [x] `src/app/qa/QaForm.tsx` (`'use client'`) — textarea + useTransition으로 askQuestion 직접 호출 + 5종 분기 렌더(답변/verse 카드/메시지) + 로딩·빈입력 가드
+- [x] `pnpm exec tsc --noEmit` → 타입 통과 (회귀 없음)
+- [x] Commit: `feat(spec-03-05): add QaForm client component`
 
 ---
 
