@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-03** — 인증 · UI · LLM 통합 (auth-ui-llm) — 6 spec — 다음: spec-03-06-server-only-boundary
+- **phase-03** — 인증 · UI · LLM 통합 (auth-ui-llm) — 6 spec — 다음: spec-03-05-qa-page-ui
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
