@@ -48,6 +48,18 @@
 - **phase-04 — quota-deploy** (일일 한도 + 예산 알림 + Vercel 배포)
   - 사용자별 daily quota 테이블·RLS, 프롬프트 인젝션 가드, 면책 표기, Vercel 배포, GCP/Supabase 예산 알림.
   - Done: 공개 URL 에서 외부 사용자 회원가입 → 질문 → 20회 초과 차단 동작.
+- **phase-05 후보 — retrieval-quality** ("RAG 깊이를 판다" — 검색 품질 측정·개선) ※번호·착수 순서 미확정, 사용자 결정 필요
+  - 척추: **측정 → 개선 → 재측정 루프.** "검색이 얼마나 좋은지 숫자로 재고, 레버 하나 당겨 그 숫자가 오르는지 확인한다."
+  - 잘못된 그림 ❌ "리랭킹·하이브리드 기법을 많이 붙이는 게 깊이" → 맞는 그림 ✅ "기법은 둘째. before/after 숫자를 만들 수 있는 게 깊이. 눈금자 없는 기법 추가는 코드 늘리기"
+  - 레버 (가치·의존순):
+    - **0. 평가 하네스 ⭐선행필수** — 골드셋(한국어 질문→정답 verse) + Recall@k·MRR·nDCG 지표화 → 베이스라인 숫자. (`scripts/eval-search.ts` 강화, `data/` 골드셋, `docs/eval/` 리포트)
+    - **1. 크로스링궐 질의변환 ⭐고유** — 한→영 번역 / HyDE(가상답변 임베딩) / multi-query → "변환 후 Recall +Δ". (`src/lib/search/` 신규 + Gemini 호출)
+    - **2. 리랭킹** — 코사인 top-20 → cross-encoder/LLM 재정렬 → top-5 → "리랭킹 후 MRR +Δ". (`src/lib/search/rerank.ts` 신규, `cosine.ts` 파이프 수정)
+    - **3. 하이브리드 검색** — 벡터 + 키워드(Postgres tsvector/BM25) RRF 융합 → "고유명사 질의 Recall +Δ". (`supabase/migrations/` + `src/lib/search/`)
+    - **4. 답변 충실도 평가** — 생성 답변이 실제 인용 verse 에서 나왔나(환각 검출) → faithfulness 점수. (`scripts/eval-prompt.ts`, `src/lib/llm/`)
+  - 본체는 코드가 아니라 `docs/eval/phase-05-*-report.md` 의 before/after 표 ("베이스라인 0.62 → 리랭킹 0.78"). 기존 `docs/eval/phase-01-search-report.md`·`phase-02-prompt-report.md` 컨벤션 연장. 면접관 페르소나가 보는 건 이 리포트.
+  - calibration: 0번은 타협 불가 선행조건, 1번은 이 프로젝트만의 차별점(한→영 성경), 2·3번은 RAG 정석이라 안전하나 흔함, 4번은 검색 아닌 생성 평가. **0 + (1 또는 2) 만 제대로 해도 포트폴리오 한 챕터.** 전부 할 필요 없음.
+  - 제약: ① phase-03(미완)·04(대기) 뒤이거나, 순서 당기려면 명시적 결정 필요. ② 0번 평가 하네스는 전체 코퍼스 적재(31k)가 사실상 선행 — 현재 미적재 verse 때문에 베이스라인 신뢰 불가. 현실 순서: 코퍼스 완납 → 골드셋 → 베이스라인 → 레버. (Icebox "전체 31k verse 임베딩 적재" 항목과 직결)
 
 **v1 이후 (Icebox 후보)** — v1.5 SSO 앱 분리, v2 엔티티 카드 추출, v3 관계 그래프
 
