@@ -75,10 +75,10 @@
 - [x] 수동 시나리오 1 (한도 차단) 검증 — 사용자 확인 (limit=0 → quota-exceeded)
 - [x] **walkthrough.md 작성** (fail-closed 결정, limit=0 버그, 수동 검증 결과)
 - [x] **pr_description.md 작성** (템플릿 준수)
-- [ ] **Ship Commit**: `docs(spec-04-01): ship walkthrough and pr description`
-- [ ] **Push**: `git push -u origin spec-04-01-quota-rls`
-- [ ] **PR 생성**: base = `phase-04-quota-deploy` (just-in-time 생성) — `/hk-pr-gh`
-- [ ] **사용자 알림**: 푸시 완료 + PR URL 보고
+- [x] **Ship Commit**: `docs(spec-04-01): ship walkthrough and pr description` (`5e37a67`)
+- [x] **Push**: `phase-04-quota-deploy`(base, just-in-time) + `spec-04-01-quota-rls`
+- [x] **PR 생성**: #21 (base `phase-04-quota-deploy`) — https://github.com/pgaey/logos-rag/pull/21
+- [x] **사용자 알림**: PR URL 보고, 머지 대기
 
 ---
 
@@ -87,6 +87,6 @@
 | 항목 | 값 |
 |---|---|
 | **총 Task 수** | 4 (작업 3 + Ship) |
-| **예상 commit 수** | 5 (마이그레이션 1 + TDD 2쌍 + ship 1) |
-| **현재 단계** | Planning |
+| **실제 commit 수** | 8 (마이그레이션 + TDD 2쌍 + fix + env + ship) |
+| **현재 단계** | Ship 완료 — PR #21 머지 대기 |
 | **마지막 업데이트** | 2026-06-03 |
