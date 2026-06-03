@@ -13,6 +13,7 @@ const FALLBACK = '일시적인 오류가 발생했습니다.'
 const MESSAGES: Record<FailureReason, string> = {
   unauthorized: '로그인이 만료되었습니다. 다시 로그인해 주세요.',
   'invalid-input': '질문을 다시 확인해 주세요.',
+  'quota-exceeded': '오늘 질문 한도를 모두 사용했어요. 내일 다시 시도해 주세요.',
   'rate-limit': '요청이 많습니다. 잠시 후 다시 시도해 주세요.',
   timeout: '응답이 지연되고 있습니다. 다시 시도해 주세요.',
   unknown: FALLBACK,
