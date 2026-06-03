@@ -55,6 +55,29 @@ describe('consumeDailyQuota', () => {
     expect(result.limit).toBe(3)
   })
 
+  it('DAILY_QUOTA_LIMIT=0 은 0 으로 취급(전면 차단), 기본값 20 으로 폴백 금지', async () => {
+    // 0 은 유효한 한도(모두 차단)다. `Number(x) || 20` 의 falsy 함정으로 20 이 되면 안 된다.
+    process.env.DAILY_QUOTA_LIMIT = '0'
+    rpc.mockResolvedValue({ data: [{ allowed: false, remaining: 0 }], error: null })
+
+    const result = await consumeDailyQuota('user-1')
+
+    expect(rpc).toHaveBeenCalledWith('consume_daily_quota', {
+      p_user_id: 'user-1',
+      p_limit: 0,
+    })
+    expect(result.limit).toBe(0)
+  })
+
+  it('DAILY_QUOTA_LIMIT 미설정/비정상 값이면 기본 20 으로 폴백', async () => {
+    process.env.DAILY_QUOTA_LIMIT = 'not-a-number'
+    rpc.mockResolvedValue({ data: [{ allowed: true, remaining: 19 }], error: null })
+
+    const result = await consumeDailyQuota('user-1')
+
+    expect(result.limit).toBe(20)
+  })
+
   it('fail-closed: rpc error 면 throw (조회 불가 → 비싼 작업 차단)', async () => {
     rpc.mockResolvedValue({ data: null, error: { message: 'connection refused' } })
 

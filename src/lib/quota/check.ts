@@ -20,7 +20,10 @@ export type QuotaResult = {
 }
 
 export async function consumeDailyQuota(userId: string): Promise<QuotaResult> {
-  const limit = Number(process.env.DAILY_QUOTA_LIMIT) || DEFAULT_LIMIT
+  // 0 은 유효한 한도(전면 차단)다. `Number(x) || 20` 으로 쓰면 0 이 falsy 라
+  // 의도치 않게 20 으로 폴백된다 — 미설정/비정상(NaN)·음수만 기본값으로 접는다.
+  const parsed = Number(process.env.DAILY_QUOTA_LIMIT)
+  const limit = Number.isInteger(parsed) && parsed >= 0 ? parsed : DEFAULT_LIMIT
 
   const supabase = createServerSupabase()
   const { data, error } = await supabase.rpc('consume_daily_quota', {
