@@ -11,6 +11,7 @@ const REASONS: FailureReason[] = [
   'invalid-input',
   'rate-limit',
   'timeout',
+  'quota-exceeded',
   'unknown',
 ]
 
@@ -31,6 +32,12 @@ describe('messageForReason', () => {
       messageForReason('timeout'),
     ])
     expect(distinct.size).toBe(4)
+  })
+
+  it('quota-exceeded 는 일반 오류(unknown)와 구별되는 고유 안내', () => {
+    // 한도 초과는 "내일 다시" 같은 구체 안내라, 일반 오류 폴백과 같으면 안 된다.
+    expect(messageForReason('quota-exceeded')).not.toBe(messageForReason('unknown'))
+    expect(messageForReason('quota-exceeded').trim().length).toBeGreaterThan(0)
   })
 
   it('정의되지 않은 reason 값에도 일반 메시지로 폴백한다(방어적)', () => {
