@@ -45,7 +45,7 @@ phase-03 에서 로그인 → 한국어 질문 → Gemini Flash 답변 + 근거 
 <!-- sdd:specs:start -->
 | ID | 슬러그 | 우선순위 | 상태 | 디렉토리 |
 |---|---|:---:|---|---|
-| `spec-04-01` | quota-rls | P? | Active | `specs/spec-04-01-quota-rls/` |
+| `spec-04-01` | quota-rls | P? | Merged | `specs/spec-04-01-quota-rls/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`
