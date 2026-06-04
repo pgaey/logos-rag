@@ -9,8 +9,10 @@ import type { VerseMatch } from '@/lib/search/cosine'
 const requireUser = vi.hoisted(() => vi.fn())
 const searchVerses = vi.hoisted(() => vi.fn())
 const generateAnswer = vi.hoisted(() => vi.fn())
+const consumeDailyQuota = vi.hoisted(() => vi.fn())
 
 vi.mock('@/lib/auth/guard', () => ({ requireUser }))
+vi.mock('@/lib/quota/check', () => ({ consumeDailyQuota }))
 vi.mock('@/lib/search/cosine', () => ({ searchVerses }))
 vi.mock('@/lib/llm/gemini', async (importOriginal) => {
   // classifyError 는 실제 구현 유지, generateAnswer 만 교체
@@ -30,6 +32,8 @@ beforeEach(() => {
   vi.clearAllMocks()
   // 기본값: 인증됨
   requireUser.mockResolvedValue({ sub: 'user-1', email: 'a@b.com' })
+  // 기본값: quota 통과 (한도 내)
+  consumeDailyQuota.mockResolvedValue({ allowed: true, remaining: 10, limit: 20 })
 })
 
 describe('askQuestion — 인증 & 입력 검증', () => {
@@ -51,10 +55,11 @@ describe('askQuestion — 인증 & 입력 검증', () => {
     expect(searchVerses).not.toHaveBeenCalled()
   })
 
-  it('빈 질문: invalid-input, 검색 미호출', async () => {
+  it('빈 질문: invalid-input, quota·검색 미호출(차감 없음)', async () => {
     const result = await askQuestion({ question: '   ' })
 
     expect(result).toEqual({ ok: false, reason: 'invalid-input' })
+    expect(consumeDailyQuota).not.toHaveBeenCalled()
     expect(searchVerses).not.toHaveBeenCalled()
   })
 
@@ -128,5 +133,37 @@ describe('askQuestion — 에러 매핑 & 빈 결과', () => {
     const result = await askQuestion({ question: '질문' })
 
     expect(result).toEqual({ ok: true, answer: '근거가 부족합니다', verses: [] })
+  })
+})
+
+describe('askQuestion — 일일 quota (spec-04-01)', () => {
+  it('quota 초과: allowed=false → quota-exceeded, 검색·LLM 미호출', async () => {
+    consumeDailyQuota.mockResolvedValue({ allowed: false, remaining: 0, limit: 20 })
+
+    const result = await askQuestion({ question: '질문' })
+
+    expect(result).toEqual({ ok: false, reason: 'quota-exceeded' })
+    expect(searchVerses).not.toHaveBeenCalled()
+    expect(generateAnswer).not.toHaveBeenCalled()
+  })
+
+  it('quota 조회 실패(fail-closed): throw → unknown, 검색·LLM 미호출', async () => {
+    consumeDailyQuota.mockRejectedValue(new Error('db down'))
+
+    const result = await askQuestion({ question: '질문' })
+
+    expect(result).toEqual({ ok: false, reason: 'unknown' })
+    expect(searchVerses).not.toHaveBeenCalled()
+    expect(generateAnswer).not.toHaveBeenCalled()
+  })
+
+  it('quota 통과 시 user.sub 로 호출하고 정상 흐름 진행', async () => {
+    searchVerses.mockResolvedValue(sampleVerses)
+    generateAnswer.mockResolvedValue({ ok: true, answer: 'ok' })
+
+    const result = await askQuestion({ question: '질문' })
+
+    expect(consumeDailyQuota).toHaveBeenCalledWith('user-1')
+    expect(result.ok).toBe(true)
   })
 })
