@@ -50,10 +50,10 @@
 - [x] 면책 수동 확인 (사용자 "2번 보인다")
 - [x] **walkthrough.md 작성**
 - [x] **pr_description.md 작성**
-- [ ] **Ship Commit**: `docs(spec-04-02): ship walkthrough and pr description`
-- [ ] **Push**: `git push -u origin spec-04-02-safety-guard`
-- [ ] **PR 생성**: base = `phase-04-quota-deploy`
-- [ ] **사용자 알림**: 푸시 완료 + PR URL 보고
+- [x] **Ship Commit**: `docs(spec-04-02): ship walkthrough and pr description` (`3a1c1a8`)
+- [x] **Push**: `spec-04-02-safety-guard`
+- [x] **PR 생성**: #22 (base `phase-04-quota-deploy`) — https://github.com/pgaey/logos-rag/pull/22
+- [x] **사용자 알림**: PR URL 보고, 머지 대기
 
 ---
 
@@ -62,6 +62,6 @@
 | 항목 | 값 |
 |---|---|
 | **총 Task 수** | 3 (가드 + 면책 + Ship) |
-| **예상 commit 수** | 4 (TDD 1쌍 + 면책 1 + ship 1) |
-| **현재 단계** | Planning |
+| **실제 commit 수** | 4 (test + 가드 + 면책 + ship) |
+| **현재 단계** | Ship 완료 — PR #22 머지 대기 |
 | **마지막 업데이트** | 2026-06-04 |
