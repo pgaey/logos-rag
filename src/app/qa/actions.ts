@@ -16,6 +16,7 @@
 
 import { z } from 'zod'
 import { requireUser } from '@/lib/auth/guard'
+import { consumeDailyQuota } from '@/lib/quota/check'
 import { searchVerses, type VerseMatch } from '@/lib/search/cosine'
 import { buildPrompt } from '@/lib/prompt/template'
 import { generateAnswer, classifyError } from '@/lib/llm/gemini'
@@ -28,7 +29,13 @@ export type AskResult =
   | { ok: true; answer: string; verses: VerseMatch[] }
   | {
       ok: false
-      reason: 'unauthorized' | 'invalid-input' | 'rate-limit' | 'timeout' | 'unknown'
+      reason:
+        | 'unauthorized'
+        | 'invalid-input'
+        | 'quota-exceeded'
+        | 'rate-limit'
+        | 'timeout'
+        | 'unknown'
     }
 
 // 입력 스키마. question 은 검색 쿼리로 충분한 길이(1000자)만 가드하고,
@@ -69,7 +76,22 @@ export async function askQuestion(input: {
   const { question } = parsed.data
   const k = clampK(input.k)
 
-  // 3. 검색. searchVerses 는 실패 시 throw 하므로 try/catch 로 감싸,
+  // 3. 일일 quota 확인·차감 (spec-04-01). 비싼 작업(검색·LLM) 직전에 막아 비용을 보호한다.
+  //    consumeDailyQuota 는 조회·비교·증가를 DB 함수 한 트랜잭션에서 원자적으로 처리.
+  //    fail-closed: 조회 실패(throw)면 한도를 알 수 없으므로 unknown 으로 차단한다
+  //    (거짓 'quota-exceeded'("내일 다시") 안내 금지 — 한도 초과가 아니라 일시 오류이므로).
+  let quota
+  try {
+    quota = await consumeDailyQuota(user.sub as string)
+  } catch (err) {
+    console.error('[askQuestion] quota check failed:', err)
+    return { ok: false, reason: 'unknown' }
+  }
+  if (!quota.allowed) {
+    return { ok: false, reason: 'quota-exceeded' }
+  }
+
+  // 4. 검색. searchVerses 는 실패 시 throw 하므로 try/catch 로 감싸,
   //    generateAnswer 와 동일한 classifyError 로 분류한다(임베딩도 같은 SDK).
   //    검색 단계 429 가 'unknown' 으로 뭉개지지 않도록 rate-limit 만 보존.
   let verses: VerseMatch[]
@@ -80,10 +102,10 @@ export async function askQuestion(input: {
     return { ok: false, reason: reason === 'rate-limit' ? 'rate-limit' : 'unknown' }
   }
 
-  // 4. 프롬프트 조립 (phase-02). verses 가 0건이어도 buildPrompt 가 처리.
+  // 5. 프롬프트 조립 (phase-02). verses 가 0건이어도 buildPrompt 가 처리.
   const prompt = buildPrompt(question, verses)
 
-  // 5. LLM 호출 (spec-03-03) → AskResult 매핑.
+  // 6. LLM 호출 (spec-03-03) → AskResult 매핑.
   const result = await generateAnswer(prompt)
   if (result.ok) {
     return { ok: true, answer: result.answer, verses }
