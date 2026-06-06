@@ -52,10 +52,10 @@
 - [x] `verify:rls` 결과 증거 확보 (SELECT 0 rows + INSERT 거부)
 - [x] **walkthrough.md 작성** (C1 실증 출력 + C2 회귀)
 - [x] **pr_description.md 작성**
-- [ ] **Ship Commit**: `docs(spec-04-03): ship walkthrough and pr description`
-- [ ] **Push**: `git push -u origin spec-04-03-security-hardening`
-- [ ] **PR 생성**: base = `phase-04-quota-deploy`
-- [ ] **사용자 알림**: 푸시 완료 + PR URL 보고
+- [x] **Ship Commit**: `docs(spec-04-03): ship walkthrough and pr description` (`8370696`)
+- [x] **Push**: `spec-04-03-security-hardening`
+- [x] **PR 생성**: #24 (base `develop` — 추가 보강이라 직접) — https://github.com/pgaey/logos-rag/pull/24
+- [x] **사용자 알림**: PR URL 보고, 머지 대기
 
 ---
 
@@ -64,6 +64,6 @@
 | 항목 | 값 |
 |---|---|
 | **총 Task 수** | 3 (C2 + C1 + Ship) |
-| **예상 commit 수** | 4 (TDD 1쌍 + 스크립트 1 + ship 1) |
-| **현재 단계** | Planning |
+| **실제 commit 수** | 4 (test + C2 + C1 + ship) |
+| **현재 단계** | Ship 완료 — PR #24 머지 대기 |
 | **마지막 업데이트** | 2026-06-06 |
