@@ -167,12 +167,38 @@ pnpm dev                           # 로컬 시나리오 1·2
 ## 🏁 Phase Done 조건
 
 - [x] 범위 내 SPEC 머지 (2/2 — spec-04-01·02; spec-04-03 배포는 이연)
-- [ ] `phase-04-quota-deploy` 가 `develop` 으로 merge (`/hk-phase-ship` Phase PR)
+- [ ] `phase-04-quota-deploy` 가 `develop` 으로 merge (Phase PR — 생성됨, 머지 대기)
 - [x] 통합 테스트 시나리오 1·2 자동/수동 PASS
 - [-] 시나리오 3 공개 URL e2e — 이연(배포 시점)
-- [ ] 성공 기준 정량 측정 결과 (본 문서 하단 "검증 결과" 섹션에 기록)
-- [ ] 사용자 최종 승인
+- [x] 성공 기준 정량 측정 결과 (검증 결과 섹션 기록)
+- [x] 사용자 최종 승인 (Phase Ship go: y)
 
 ## 📊 검증 결과 (phase 완료 시 작성)
 
-<!-- 통합 테스트 로그, 성공 기준 측정값, 회귀 점검 결과 등을 여기 첨부 -->
+> 작성: 2026-06-06, Phase Ship.
+
+### 성공 기준
+| # | 기준 | 결과 | 증거 |
+|:---:|---|:---:|---|
+| 1 | quota 차단(자동) | ✅ | `actions.test` quota-exceeded (전체 54/54 PASS) |
+| 2 | RLS 보호 | ✅ | `ENABLE ROW LEVEL SECURITY` + 정책 0개(secret-key-only) |
+| 3 | 인젝션 가드(자동) | ✅ | `template.test` sanitize 7건 |
+| 4 | 면책 + quota UI(수동) | ✅ | 면책 사용자 확인 + `quota-exceeded` 메시지 |
+| 5 | 공개 e2e(수동) | ⏸ 이연 | 배포 미수행 → Icebox |
+
+### 통합 테스트
+| # | 시나리오 | 결과 | 증거 |
+|:---:|---|:---:|---|
+| 1 | 일일 한도 차단 | ✅ | 사용자 수동 (limit=0 → 검색 전 quota-exceeded) |
+| 2 | 인젝션 가드 + 면책 | ✅ | sanitize 자동 + 면책 수동 (모델 행동은 quota 소진으로 생략) |
+| 3 | 공개 배포 e2e | ⏸ 이연 | Icebox |
+
+### 회귀 / 정적 검사
+- `pnpm test`: **54/54 PASS** (6 files)
+- `pnpm exec tsc --noEmit`: clean
+- eslint: 미설치(skip)
+
+### 알려진 제약
+- 배포·예산 알림(spec-4-03)·공개 e2e 이연 → Icebox. 로컬 검증 충분 후 공개 시점에 별도 작업.
+- 인젝션 모델 행동 수동 검증은 Gemini quota 소진으로 생략(가드는 단위 테스트로 검증).
+- spec-04-02 critique 대안 A(`systemInstruction` 구조 분리) Icebox 이연.
