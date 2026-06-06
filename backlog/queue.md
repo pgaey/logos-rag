@@ -34,6 +34,8 @@
 
 - [ ] **프롬프트 system 채널 구조 분리** (spec-04-02 critique 대안 A; 2026-06-04 기록) — Gemini `config.systemInstruction` 으로 system 지시를 `contents` 와 분리. 사용자 질문이 `[System]` 헤더를 흉내내도 구조적으로 무력화돼 인젝션 방어가 견고해짐(OWASP 1순위 권고). 단 `buildPrompt`/`generateAnswer` 시그니처 변경 → spec-02/03 회귀 범위 큼. 채택 시 ADR `prompt-system-channel-separation`(type: decision) 작성. 후속 spec 또는 phase-05 후보.
 
+- [ ] **공개 배포 + 예산 알림** (phase-04 spec-4-03 이연; 2026-06-06) — Vercel 배포(env 등록 → 공개 URL) + GCP(Gemini)·Supabase 예산 알림 콘솔 설정. 코드 적고 외부 콘솔 작업 위주 → `docs/deploy/` 런북 + 수동 체크리스트 중심. 로컬 검증 충분 후 공개 시점에 spec-x 또는 phase 재개. **예산 알림 대상에 Gemini RPD 모니터링 포함**(spec-04-01 발견: 검색 임베딩이 `embed:bible` 과 같은 RPD 공유 → 앱 quota 보다 RPD 가 먼저 터질 수 있음).
+
 ## 📋 대기 Phase
 
 > 다음에 진행할 phase 를 자유롭게 메모합니다 (사람이 직접 편집).

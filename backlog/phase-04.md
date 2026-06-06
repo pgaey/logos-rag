@@ -1,4 +1,6 @@
-# phase-4: 공개 안전장치 · 배포 (quota-deploy)
+# phase-4: 공개 안전장치 — quota · safety (quota-deploy)
+
+> ⏸ **배포(spec-4-03)는 이연**: 본 phase 는 quota+safety 로 완결한다. Vercel 배포·예산 알림은 로컬 검증 충분 후 별도 작업으로 분리(2026-06-06 결정, 결정 기록 참조).
 
 > 본 phase 의 모든 SPEC 을 한 파일에 요점/방향성으로 나열합니다.
 > *구체적* 작업 내용은 `specs/spec-4-{seq}-{slug}/spec.md` 에서 다룹니다.
@@ -10,7 +12,7 @@
 | 항목 | 값 |
 |---|---|
 | **Phase ID** | `phase-4` |
-| **상태** | Planning |
+| **상태** | In Progress (quota·safety 완료, 배포 이연 → phase ship 진행) |
 | **시작일** | 2026-06-03 |
 | **목표 종료일** | TBD (학습 페이스) |
 | **소유자** | @pgaey |
@@ -34,7 +36,7 @@ phase-03 에서 로그인 → 한국어 질문 → Gemini Flash 답변 + 근거 
 2. **quota 행 보호(RLS)**: `user_daily_quotas` 테이블이 RLS 로 보호되어, 사용자가 타인의 quota 행을 읽거나 조작할 수 없음 (정책 존재 + 동작 검증).
 3. **인젝션 가드(자동)**: 알려진 인젝션 페이로드(우리 프롬프트 구분자 흉내, 제어문자)가 입력되면 sanitize 가 제거/이스케이프함 — `buildPrompt`/sanitize unit test 로 검증.
 4. **면책 + quota UI(수동)**: 답변 화면에 면책 표기가 보이고, 한도 초과 시 사용자 친화 메시지가 표시됨.
-5. **공개 e2e(수동)**: Vercel 공개 URL 에서 외부 사용자가 회원가입 → 질문 → 한도 초과 시 차단되는 흐름이 동작.
+5. ~~**공개 e2e(수동)**: Vercel 공개 URL 에서 외부 사용자가 회원가입 → 질문 → 한도 초과 시 차단~~ → **이연(deferred, 2026-06-06)**: 배포 제외. 로컬 dev 에서 시나리오 1·2 로 검증 완료, 공개 배포는 별도 작업.
 
 ## 🧩 작업 단위 (SPECs)
 
@@ -79,7 +81,9 @@ phase-03 에서 로그인 → 한국어 질문 → Gemini Flash 답변 + 근거 
   - OWASP LLM Top 10 — LLM01 Prompt Injection (개념 참고)
 - **연관 모듈**: `src/lib/prompt/template.ts`, `src/lib/prompt/__tests__/template.test.ts`, `src/app/qa/QaForm.tsx`, `src/components/AnswerView.tsx`
 
-### spec-4-03 — deploy-budget (Vercel 배포 + 예산 알림)
+### spec-4-03 — deploy-budget (Vercel 배포 + 예산 알림) — ⏸ 이연(deferred, 2026-06-06)
+
+> **이연 사유**: 배포는 계정·결제가 얽힌 외부 콘솔 작업이고, 로컬에서 quota·safety 를 충분히 검증한 뒤 공개해도 늦지 않다는 사용자 결정. phase-04 는 quota+safety 로 완결하고, 본 항목은 `backlog/queue.md` Icebox 로 이연(공개 시점에 spec-x 또는 phase 재개).
 
 - **요점**: 공개 URL 확보 + 비용 폭주 대비 예산 알림 설정. 코드 산출물이 적고 **외부 콘솔 설정**이 대부분이라, "설정 런북 + 수동 검증 체크리스트" 문서 중심 spec (테스트 대신 수동 시나리오로 Done 검증).
 - **방향성**:
@@ -101,6 +105,7 @@ phase-03 에서 로그인 → 한국어 질문 → Gemini Flash 답변 + 근거 
 | 브랜치 전략 | base branch / 일반 | **base branch (`phase-04-quota-deploy`→develop)** | phase-03 패턴 답습, 일관성. |
 | RLS 정책 형태 | secret-key-only / 본인-행 정책 | **spec-4-01 에서 결정 (UI 직접 읽기 여부에 종속)** | quota 를 서버에서만 다루면 정책 0개로 충분, 클라이언트가 잔여 횟수를 직접 읽으면 본인-행 정책 필수. |
 | 인젝션·면책 분리 | 각각 spec / 번들 | **번들(spec-4-02)** | 각각 소규모 + "공개 안전장치" 동일 테마. ceremony 절약(§11.4). |
+| 배포 시점 (spec-4-03) | phase-04 포함 / 이연 | **이연 — 별도 작업** | 로컬에서 충분히 검증 후 공개(계정·결제 얽힘). quota+safety 를 먼저 develop 에 안착. 2026-06-06 결정. |
 
 ## 🧪 통합 테스트 시나리오 (간결)
 
@@ -124,7 +129,7 @@ phase-03 에서 로그인 → 한국어 질문 → Gemini Flash 답변 + 근거 
   - 답변 화면에 면책 표기 노출 (수동)
 - **연관 SPEC**: spec-4-02
 
-### 시나리오 3: 공개 배포 엔드투엔드 (수동)
+### 시나리오 3: 공개 배포 엔드투엔드 (수동) — ⏸ 이연 (배포 시점에 수행)
 - **Given**: Vercel 공개 URL 배포 완료, 환경변수 등록됨
 - **When**: 외부 사용자가 공개 URL 접속 → 회원가입 → 로그인 → 질문 N+1회
 - **Then**: 회원가입·질문 정상 동작, 한도 초과 시 차단, 예산 알림 설정 활성
@@ -161,10 +166,10 @@ pnpm dev                           # 로컬 시나리오 1·2
 
 ## 🏁 Phase Done 조건
 
-- [ ] 모든 SPEC 이 `phase-04-quota-deploy` 로 merge (3/3)
+- [x] 범위 내 SPEC 머지 (2/2 — spec-04-01·02; spec-04-03 배포는 이연)
 - [ ] `phase-04-quota-deploy` 가 `develop` 으로 merge (`/hk-phase-ship` Phase PR)
-- [ ] 통합 테스트 시나리오 1·2 자동/수동 PASS
-- [ ] 시나리오 3 공개 URL e2e 수동 PASS
+- [x] 통합 테스트 시나리오 1·2 자동/수동 PASS
+- [-] 시나리오 3 공개 URL e2e — 이연(배포 시점)
 - [ ] 성공 기준 정량 측정 결과 (본 문서 하단 "검증 결과" 섹션에 기록)
 - [ ] 사용자 최종 승인
 
