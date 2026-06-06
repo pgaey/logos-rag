@@ -13,6 +13,7 @@
     "eval:search": "tsx --env-file=.env.local scripts/eval-search.ts",
     "search:prompt": "tsx --env-file=.env.local scripts/search-prompt.ts",
     "eval:prompt": "tsx --env-file=.env.local scripts/eval-prompt.ts",
+    "verify:rls": "tsx --env-file=.env.local scripts/verify-rls.ts",
     "test": "vitest run"
   },
   "dependencies": {
