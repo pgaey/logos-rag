@@ -51,6 +51,10 @@ export function QaForm() {
         >
           {isPending ? "답변 생성 중… (5~15초)" : "질문하기"}
         </button>
+
+        <p className="text-xs leading-relaxed text-zinc-500 dark:text-zinc-500">
+          AI가 생성한 답변으로 부정확하거나 불완전할 수 있습니다. 중요한 판단은 성경 원문과 전문가를 통해 확인하세요.
+        </p>
       </form>
 
       {result && !result.ok && (
