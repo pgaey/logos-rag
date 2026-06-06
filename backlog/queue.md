@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-04** — 공개 안전장치 · 배포 (quota-deploy) — 2 spec — 다음: (spec 없음)
+- **phase-04** — 공개 안전장치 — quota · safety (quota-deploy) — 3 spec — 다음: spec-04-03-security-hardening
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
