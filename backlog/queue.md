@@ -8,7 +8,7 @@
 ## 📦 진행 중 Phase
 
 <!-- sdd:active:start -->
-- **phase-04** — 공개 안전장치 — quota · safety (quota-deploy) — 3 spec — 다음: spec-04-03-security-hardening
+(active phase 없음. `bin/sdd phase new <slug>` 로 시작)
 <!-- sdd:active:end -->
 
 ## 📥 spec-x 대기
@@ -76,6 +76,7 @@
 - **phase-2** — ? — completed 2026-05-20
 - **phase-02** — 검색·프롬프트 조립 (search-prompt) — completed 2026-05-20
 - **phase-03** — 인증 · UI · LLM 통합 (auth-ui-llm) — completed 2026-06-02
+- **phase-04** — 공개 안전장치 — quota · safety (quota-deploy) — completed 2026-06-10
 <!-- sdd:done:end -->
 
 ---
