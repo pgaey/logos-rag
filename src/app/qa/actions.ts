@@ -82,7 +82,7 @@ export async function askQuestion(input: {
   //    (거짓 'quota-exceeded'("내일 다시") 안내 금지 — 한도 초과가 아니라 일시 오류이므로).
   let quota
   try {
-    quota = await consumeDailyQuota(user.sub as string)
+    quota = await consumeDailyQuota(user.sub)
   } catch (err) {
     console.error('[askQuestion] quota check failed:', err)
     return { ok: false, reason: 'unknown' }

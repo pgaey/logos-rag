@@ -41,4 +41,21 @@ describe('requireUser', () => {
 
     expect(result).toBeNull()
   })
+
+  it('claims 는 있으나 sub 가 없으면 null 을 반환한다 (C2 fail-closed)', async () => {
+    // sub 는 quota 버킷 키. 없으면 인증으로 인정하면 안 된다(타 사용자와 버킷 공유 방지).
+    getClaims.mockResolvedValue({ data: { claims: { email: 'a@b.com' } } })
+
+    const result = await requireUser()
+
+    expect(result).toBeNull()
+  })
+
+  it('sub 가 빈 문자열이면 null 을 반환한다', async () => {
+    getClaims.mockResolvedValue({ data: { claims: { sub: '', email: 'a@b.com' } } })
+
+    const result = await requireUser()
+
+    expect(result).toBeNull()
+  })
 })

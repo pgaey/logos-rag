@@ -49,6 +49,7 @@ phase-03 에서 로그인 → 한국어 질문 → Gemini Flash 답변 + 근거 
 |---|---|:---:|---|---|
 | `spec-04-01` | quota-rls | P? | Merged | `specs/spec-04-01-quota-rls/` |
 | `spec-04-02` | safety-guard | P? | Merged | `specs/spec-04-02-safety-guard/` |
+| `spec-04-03` | security-hardening | P? | Active | `specs/spec-04-03-security-hardening/` |
 <!-- sdd:specs:end -->
 
 > 상태 허용값: `Backlog` / `In Progress` / `Merged`
@@ -81,19 +82,18 @@ phase-03 에서 로그인 → 한국어 질문 → Gemini Flash 답변 + 근거 
   - OWASP LLM Top 10 — LLM01 Prompt Injection (개념 참고)
 - **연관 모듈**: `src/lib/prompt/template.ts`, `src/lib/prompt/__tests__/template.test.ts`, `src/app/qa/QaForm.tsx`, `src/components/AnswerView.tsx`
 
-### spec-4-03 — deploy-budget (Vercel 배포 + 예산 알림) — ⏸ 이연(deferred, 2026-06-06)
+### spec-4-03 — security-hardening (회고 Critical 보강)
 
-> **이연 사유**: 배포는 계정·결제가 얽힌 외부 콘솔 작업이고, 로컬에서 quota·safety 를 충분히 검증한 뒤 공개해도 늦지 않다는 사용자 결정. phase-04 는 quota+safety 로 완결하고, 본 항목은 `backlog/queue.md` Icebox 로 이연(공개 시점에 spec-x 또는 phase 재개).
+> phase-04 회고(`docs/review/phase-04-review.md`)의 Critical 2건을 닫는다. **배포·예산(구 deploy-budget)은 spec 번호를 받지 않고 `backlog/queue.md` Icebox 로 이연** — 공개 시점에 spec-x 또는 phase 재개.
 
-- **요점**: 공개 URL 확보 + 비용 폭주 대비 예산 알림 설정. 코드 산출물이 적고 **외부 콘솔 설정**이 대부분이라, "설정 런북 + 수동 검증 체크리스트" 문서 중심 spec (테스트 대신 수동 시나리오로 Done 검증).
+- **요점**: ⓐ RLS **동작 실증**(C1) + ⓑ 인증 `sub` 부재 **가드**(C2). 둘 다 "선언만 있고 검증 안 된 안전장치"를 닫는다.
 - **방향성**:
-  - **Vercel 배포**: 환경변수 등록(Supabase URL/key, `SUPABASE_SECRET_KEY`, `GEMINI_*`, `DAILY_QUOTA_LIMIT`), `pnpm build` 검증, 필요 시 `next.config.ts` 보안 헤더 검토. 배포 절차를 `docs/deploy/` 런북으로 기록.
-  - **예산 알림**: GCP(Gemini API) 예산 알림 + Supabase 사용량 알림을 콘솔에서 설정하고, 스크린샷/절차를 런북에 남김.
-  - 산출물의 본체는 **문서 + 공개 URL** 이지 코드가 아님 (phase 정렬 시 합의된 "성격 다름").
+  - **C1 (RLS 실증)**: anon/publishable 키 클라이언트로 `user_daily_quotas` 를 직접 SELECT/INSERT 시도 → 행 미노출(SELECT 0 rows) + INSERT 거부(error) 확인. 검증 스크립트(`scripts/verify-rls.ts`) 로 "정책 0개 = 외부 키 접근 차단"이 실제 동작함을 1회 실증하고 증거를 walkthrough 에 기록.
+  - **C2 (sub 가드)**: `requireUser()` 가 `sub` 없는 claims 를 **인증 실패(null)** 로 취급. `user.sub as string` 타입 단언 제거 → `sub` 보장. sub 없는 토큰이 quota 버킷을 공유하거나 throw 하는 fail-open 경로 차단(fail-closed 일관). TDD.
 - **참조**:
-  - `.env.example` — 배포 환경변수 템플릿
-  - `package.json` — pnpm, build script
-- **연관 모듈**: `docs/deploy/`, `next.config.ts`(선택), `.env.example`
+  - `docs/review/phase-04-review.md` — C1·C2 상세
+  - `src/lib/auth/guard.ts`(`requireUser`), `src/app/qa/actions.ts`(`user.sub`), `src/lib/supabase/server.ts`(anon client 패턴)
+- **연관 모듈**: `src/lib/auth/guard.ts`, `src/app/qa/actions.ts`, `scripts/verify-rls.ts`(신규), 관련 테스트
 
 ## 📌 결정 기록 (Review)
 
@@ -105,7 +105,8 @@ phase-03 에서 로그인 → 한국어 질문 → Gemini Flash 답변 + 근거 
 | 브랜치 전략 | base branch / 일반 | **base branch (`phase-04-quota-deploy`→develop)** | phase-03 패턴 답습, 일관성. |
 | RLS 정책 형태 | secret-key-only / 본인-행 정책 | **spec-4-01 에서 결정 (UI 직접 읽기 여부에 종속)** | quota 를 서버에서만 다루면 정책 0개로 충분, 클라이언트가 잔여 횟수를 직접 읽으면 본인-행 정책 필수. |
 | 인젝션·면책 분리 | 각각 spec / 번들 | **번들(spec-4-02)** | 각각 소규모 + "공개 안전장치" 동일 테마. ceremony 절약(§11.4). |
-| 배포 시점 (spec-4-03) | phase-04 포함 / 이연 | **이연 — 별도 작업** | 로컬에서 충분히 검증 후 공개(계정·결제 얽힘). quota+safety 를 먼저 develop 에 안착. 2026-06-06 결정. |
+| 배포 시점 (deploy-budget) | phase-04 포함 / 이연 | **이연 — Icebox(번호 미부여)** | 로컬에서 충분히 검증 후 공개(계정·결제 얽힘). quota+safety 를 먼저 develop 에 안착. 2026-06-06 결정. |
+| 회고 Critical 처리 | 머지 후 별도 spec-x / phase-04 추가 spec | **phase-04 spec-04-03 추가** | C1·C2 안전장치 보강은 phase 주제(공개 안전) 일치. develop 머지 후 phase 브랜치에서 추가 PR. spec-4-03 번호를 deploy 대신 보강이 사용. 2026-06-06. |
 
 ## 🧪 통합 테스트 시나리오 (간결)
 
